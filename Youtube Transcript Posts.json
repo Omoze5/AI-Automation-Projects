@@ -1,0 +1,5682 @@
+{
+  "name": "Youtube Transcript Posts",
+  "nodes": [
+    {
+      "parameters": {
+        "formTitle": "Youtube Video Transcript",
+        "formFields": {
+          "values": [
+            {
+              "fieldLabel": "Youtube Video URL",
+              "placeholder": "url",
+              "requiredField": true
+            },
+            {
+              "fieldLabel": "Name",
+              "placeholder": "First Name"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.formTrigger",
+      "typeVersion": 2.3,
+      "position": [
+        -544,
+        272
+      ],
+      "id": "3d6f78a6-37fe-4139-b963-e416582ec46a",
+      "name": "On form submission",
+      "webhookId": "cb60ac48-1479-407c-aa75-eaaf4f4f54ab"
+    },
+    {
+      "parameters": {
+        "operation": "getTranscript",
+        "videoId": "={{ $json['Youtube Video URL'] }}"
+      },
+      "type": "n8n-nodes-supadata.supadata",
+      "typeVersion": 1,
+      "position": [
+        -320,
+        272
+      ],
+      "id": "7ebf24e5-46af-45f4-b644-e92eb2d40bdd",
+      "name": "Get video transcript",
+      "credentials": {
+        "supadataApi": {
+          "id": "ZtvXej1Bgve5OLaj",
+          "name": "Supadata account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=VIDEO TRANSCRIPT:\n\n{{ $json.fullTranscript }}\n\nCreate the three social media posts (LinkedIn, Twitter, and TikTok) based on this transcript following the format specified in the system instructions.",
+        "options": {
+          "systemMessage": "=You are a social media content expert. Based on the video transcript provided, create three distinct social media posts optimized for different platforms.\n\nVIDEO TRANSCRIPT:{{ $json.fullTranscript }}\n\n\n\n\nGenerate three separate posts with the following specifications:\n\n**LINKEDIN POST:**\n- Professional and insightful tone\n- 150-250 words\n- Include 3-5 relevant hashtags at the end\n- Focus on key takeaways, business insights, or professional value\n- Use line breaks for readability\n- Can include a thought-provoking question or call-to-action\n\n**TWITTER POST:**\n- Concise and engaging (under 280 characters)\n- Include 2-3 relevant hashtags\n- Capture the most compelling hook or insight from the video\n- Use casual yet informative tone\n- Include a call-to-action if space permits\n\n**TIKTOK POST:**\n- Casual, energetic, and hook-focused\n- 100-150 characters for the caption\n- Start with a strong attention-grabbing hook\n- Use 3-5 trending or relevant hashtags\n- Conversational tone, as if speaking directly to viewers\n- Include emoji where appropriate\n\nFORMAT YOUR RESPONSE EXACTLY AS:\n\nLINKEDIN:\n[LinkedIn post content here]\n\nTWITTER:\n[Twitter post content here]\n\nTIKTOK:\n[TikTok post content here]"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 2.2,
+      "position": [
+        128,
+        272
+      ],
+      "id": "19141344-e576-4af6-b535-07121ef0daf0",
+      "name": "AI Agent"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Get the Gemini response\nconst response = $input.first().json.output;\n\n// Extract each platform's content using regex\nconst linkedinMatch = response.match(/LINKEDIN:\\s*([\\s\\S]*?)(?=\\n\\nTWITTER:|TWITTER:)/);\nconst twitterMatch = response.match(/TWITTER:\\s*([\\s\\S]*?)(?=\\n\\nTIKTOK:|TIKTOK:)/);\nconst tiktokMatch = response.match(/TIKTOK:\\s*([\\s\\S]*?)(?=\\n*$)/);\n\n// Clean up the extracted content (remove extra newlines and dots at the end)\nconst cleanText = (text) => {\n  if (!text) return '';\n  return text.trim().replace(/\\.{3,}$/, '').trim();\n};\n\nreturn {\n  json: {\n    linkedin_post: cleanText(linkedinMatch ? linkedinMatch[1] : ''),\n    twitter_post: cleanText(twitterMatch ? twitterMatch[1] : ''),\n    tiktok_post: cleanText(tiktokMatch ? tiktokMatch[1] : ''),\n    raw_response: response\n  }\n};"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        480,
+        272
+      ],
+      "id": "b9c80f68-8050-47dd-9c9b-9348c6fead35",
+      "name": "Code in JavaScript"
+    },
+    {
+      "parameters": {
+        "jsCode": "const contentArray = $input.first().json.content;\n\nconst combinedTranscript = contentArray\n  .map(item => item.text)\n  .join(' ');\n\nreturn {\n  json: {\n    fullTranscript: combinedTranscript\n  }\n};"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -96,
+        272
+      ],
+      "id": "07ad7c4f-f087-4b10-8944-51b5f4996a87",
+      "name": "Code in JavaScript1"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1,
+      "position": [
+        208,
+        496
+      ],
+      "id": "94c9979f-5e5b-438e-b283-e8af7c5275d9",
+      "name": "Google Gemini Chat Model",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "WEM5TZmeXHJkL88n",
+          "name": "Google Gemini(PaLM) Api account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "appendOrUpdate",
+        "documentId": {
+          "__rl": true,
+          "value": "1vo4UeLeKKaAK5rHqZybLyD9qjeAn4BFDcrZIIzVOFog",
+          "mode": "list",
+          "cachedResultName": "SOCIAL MEDIA POST ",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1vo4UeLeKKaAK5rHqZybLyD9qjeAn4BFDcrZIIzVOFog/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Sheet1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1vo4UeLeKKaAK5rHqZybLyD9qjeAn4BFDcrZIIzVOFog/edit#gid=0"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "VIDEO URL": "={{ $('On form submission').item.json['Youtube Video URL'] }}",
+            "TWITTER POST ": "={{ $json.twitter_post }}",
+            "LINKEDIN POST": "={{ $json.linkedin_post }}",
+            "TIKTOK POST": "={{ $json.tiktok_post }}"
+          },
+          "matchingColumns": [
+            "VIDEO URL"
+          ],
+          "schema": [
+            {
+              "id": "VIDEO URL",
+              "displayName": "VIDEO URL",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "TWITTER POST ",
+              "displayName": "TWITTER POST ",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "LINKEDIN POST",
+              "displayName": "LINKEDIN POST",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "TIKTOK POST",
+              "displayName": "TIKTOK POST",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        704,
+        272
+      ],
+      "id": "31ccb91f-6c72-40b2-b971-2961047b687e",
+      "name": "Append or update row in sheet",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "rUjggs1C0fUlpZD3",
+          "name": "Google Sheets account"
+        }
+      }
+    }
+  ],
+  "pinData": {
+    "On form submission": [
+      {
+        "json": {
+          "Youtube Video URL": "https://youtu.be/nXc13tFrMUY?si=2gCfAbtrWSdC3HE5",
+          "Name": "Mercy",
+          "submittedAt": "2025-10-07T20:09:39.856+01:00",
+          "formMode": "test"
+        }
+      }
+    ],
+    "Get video transcript": [
+      {
+        "json": {
+          "lang": "en",
+          "availableLangs": [
+            "en"
+          ],
+          "content": [
+            {
+              "lang": "en",
+              "text": "I'm going to show you how to",
+              "offset": 300,
+              "duration": 1049
+            },
+            {
+              "lang": "en",
+              "text": "generate tens of thousands",
+              "offset": 1350,
+              "duration": 2279
+            },
+            {
+              "lang": "en",
+              "text": "of highly qualified",
+              "offset": 3630,
+              "duration": 1859
+            },
+            {
+              "lang": "en",
+              "text": "leads in a matter",
+              "offset": 5490,
+              "duration": 1859
+            },
+            {
+              "lang": "en",
+              "text": "of minutes.",
+              "offset": 7350,
+              "duration": 959
+            },
+            {
+              "lang": "en",
+              "text": "But more importantly, I'm going to",
+              "offset": 8310,
+              "duration": 1139
+            },
+            {
+              "lang": "en",
+              "text": "show you exactly how you can turn",
+              "offset": 9450,
+              "duration": 1949
+            },
+            {
+              "lang": "en",
+              "text": "those tens of thousands of leads",
+              "offset": 11400,
+              "duration": 1979
+            },
+            {
+              "lang": "en",
+              "text": "into qualified booked calls",
+              "offset": 13380,
+              "duration": 2219
+            },
+            {
+              "lang": "en",
+              "text": "for your company and eventually",
+              "offset": 15600,
+              "duration": 1889
+            },
+            {
+              "lang": "en",
+              "text": "clients. Now, our portfolio",
+              "offset": 17490,
+              "duration": 1799
+            },
+            {
+              "lang": "en",
+              "text": "companies has literally generated",
+              "offset": 19290,
+              "duration": 1799
+            },
+            {
+              "lang": "en",
+              "text": "millions of different leads",
+              "offset": 21090,
+              "duration": 1979
+            },
+            {
+              "lang": "en",
+              "text": "online.",
+              "offset": 23070,
+              "duration": 1019
+            },
+            {
+              "lang": "en",
+              "text": "And I can say that this is probably",
+              "offset": 24090,
+              "duration": 2159
+            },
+            {
+              "lang": "en",
+              "text": "one of the easiest",
+              "offset": 26250,
+              "duration": 1889
+            },
+            {
+              "lang": "en",
+              "text": "and simple to use softwares",
+              "offset": 28140,
+              "duration": 1859
+            },
+            {
+              "lang": "en",
+              "text": "that I've ever seen.",
+              "offset": 30000,
+              "duration": 1199
+            },
+            {
+              "lang": "en",
+              "text": "And I'm going to break it down for",
+              "offset": 31200,
+              "duration": 1139
+            },
+            {
+              "lang": "en",
+              "text": "you in this video here.",
+              "offset": 32340,
+              "duration": 1439
+            },
+            {
+              "lang": "en",
+              "text": "So the software is called Apollo.io",
+              "offset": 33780,
+              "duration": 2069
+            },
+            {
+              "lang": "en",
+              "text": "and I'm going to walk",
+              "offset": 35850,
+              "duration": 1829
+            },
+            {
+              "lang": "en",
+              "text": "you through exactly how to find the",
+              "offset": 37680,
+              "duration": 1829
+            },
+            {
+              "lang": "en",
+              "text": "most qualified people on the",
+              "offset": 39510,
+              "duration": 1409
+            },
+            {
+              "lang": "en",
+              "text": "software.",
+              "offset": 40920,
+              "duration": 779
+            },
+            {
+              "lang": "en",
+              "text": "I'm going to give you our messaging",
+              "offset": 41700,
+              "duration": 1589
+            },
+            {
+              "lang": "en",
+              "text": "that you can use to set up an email",
+              "offset": 43290,
+              "duration": 1619
+            },
+            {
+              "lang": "en",
+              "text": "sequence and then show you some cool",
+              "offset": 44910,
+              "duration": 1919
+            },
+            {
+              "lang": "en",
+              "text": "features and tips that I don't see",
+              "offset": 46830,
+              "duration": 1439
+            },
+            {
+              "lang": "en",
+              "text": "anybody else talking about on",
+              "offset": 48270,
+              "duration": 1319
+            },
+            {
+              "lang": "en",
+              "text": "YouTube. Now, really quickly, before",
+              "offset": 49590,
+              "duration": 1469
+            },
+            {
+              "lang": "en",
+              "text": "I continue, I'm going to be reading",
+              "offset": 51060,
+              "duration": 1229
+            },
+            {
+              "lang": "en",
+              "text": "directly off of this Google document",
+              "offset": 52290,
+              "duration": 1799
+            },
+            {
+              "lang": "en",
+              "text": "that I created that goes through",
+              "offset": 54090,
+              "duration": 1319
+            },
+            {
+              "lang": "en",
+              "text": "step by step, how to do everything.",
+              "offset": 55410,
+              "duration": 1619
+            },
+            {
+              "lang": "en",
+              "text": "It also links to a bunch of assets",
+              "offset": 57030,
+              "duration": 1919
+            },
+            {
+              "lang": "en",
+              "text": "that I can't cover in this YouTube",
+              "offset": 58950,
+              "duration": 1439
+            },
+            {
+              "lang": "en",
+              "text": "video here that will make getting",
+              "offset": 60390,
+              "duration": 1799
+            },
+            {
+              "lang": "en",
+              "text": "clients online a lot easier for you.",
+              "offset": 62190,
+              "duration": 1589
+            },
+            {
+              "lang": "en",
+              "text": "So if you want that, make sure you",
+              "offset": 63780,
+              "duration": 1139
+            },
+            {
+              "lang": "en",
+              "text": "click the link description down",
+              "offset": 64920,
+              "duration": 1019
+            },
+            {
+              "lang": "en",
+              "text": "below. So probably one of my",
+              "offset": 65940,
+              "duration": 1169
+            },
+            {
+              "lang": "en",
+              "text": "favorite things about Apollo Dot IO",
+              "offset": 67110,
+              "duration": 1679
+            },
+            {
+              "lang": "en",
+              "text": "is that you can actually scrape",
+              "offset": 68790,
+              "duration": 1679
+            },
+            {
+              "lang": "en",
+              "text": "qualified leads and send",
+              "offset": 70470,
+              "duration": 2159
+            },
+            {
+              "lang": "en",
+              "text": "emails to them all inside",
+              "offset": 72630,
+              "duration": 1859
+            },
+            {
+              "lang": "en",
+              "text": "the same software and it gives you",
+              "offset": 74490,
+              "duration": 1709
+            },
+            {
+              "lang": "en",
+              "text": "really, really good filters as",
+              "offset": 76200,
+              "duration": 1859
+            },
+            {
+              "lang": "en",
+              "text": "I'm going to walk through here in a",
+              "offset": 78060,
+              "duration": 989
+            },
+            {
+              "lang": "en",
+              "text": "moment to make sure that you're only",
+              "offset": 79050,
+              "duration": 1709
+            },
+            {
+              "lang": "en",
+              "text": "sending the most qualified people.",
+              "offset": 80760,
+              "duration": 1499
+            },
+            {
+              "lang": "en",
+              "text": "And also it gives you opportunities",
+              "offset": 82260,
+              "duration": 2069
+            },
+            {
+              "lang": "en",
+              "text": "to split test different emails, use",
+              "offset": 84330,
+              "duration": 1769
+            },
+            {
+              "lang": "en",
+              "text": "a AI to write emails for you.",
+              "offset": 86100,
+              "duration": 1979
+            },
+            {
+              "lang": "en",
+              "text": "So if you're looking for like a one",
+              "offset": 88080,
+              "duration": 1289
+            },
+            {
+              "lang": "en",
+              "text": "stop shop of how do I generate",
+              "offset": 89370,
+              "duration": 1919
+            },
+            {
+              "lang": "en",
+              "text": "tens of thousands of leads and",
+              "offset": 91290,
+              "duration": 1589
+            },
+            {
+              "lang": "en",
+              "text": "hundreds of boat calls for your",
+              "offset": 92880,
+              "duration": 1139
+            },
+            {
+              "lang": "en",
+              "text": "company, this is going to be it.",
+              "offset": 94020,
+              "duration": 1169
+            },
+            {
+              "lang": "en",
+              "text": "Now, one of the really great things",
+              "offset": 95190,
+              "duration": 989
+            },
+            {
+              "lang": "en",
+              "text": "I like about Apollo is that actually",
+              "offset": 96180,
+              "duration": 1439
+            },
+            {
+              "lang": "en",
+              "text": "they have a free plan here, and",
+              "offset": 97620,
+              "duration": 1739
+            },
+            {
+              "lang": "en",
+              "text": "that's exactly all you need to get",
+              "offset": 99360,
+              "duration": 1439
+            },
+            {
+              "lang": "en",
+              "text": "started. And that's we're going to",
+              "offset": 100800,
+              "duration": 1029
+            },
+            {
+              "lang": "en",
+              "text": "be using in this video.",
+              "offset": 101830,
+              "duration": 1129
+            },
+            {
+              "lang": "en",
+              "text": "So the first step that we're going",
+              "offset": 102960,
+              "duration": 1049
+            },
+            {
+              "lang": "en",
+              "text": "to want to do is sign up for Apollo",
+              "offset": 104010,
+              "duration": 1889
+            },
+            {
+              "lang": "en",
+              "text": "dot IO.",
+              "offset": 105900,
+              "duration": 929
+            },
+            {
+              "lang": "en",
+              "text": "If you get this Google document,",
+              "offset": 106830,
+              "duration": 1139
+            },
+            {
+              "lang": "en",
+              "text": "there'll be a special link inside of",
+              "offset": 107970,
+              "duration": 1199
+            },
+            {
+              "lang": "en",
+              "text": "here, but you can also just Google",
+              "offset": 109170,
+              "duration": 1289
+            },
+            {
+              "lang": "en",
+              "text": "it. And we want to start with a free",
+              "offset": 110460,
+              "duration": 1859
+            },
+            {
+              "lang": "en",
+              "text": "plan, okay? Because once you get",
+              "offset": 112320,
+              "duration": 1259
+            },
+            {
+              "lang": "en",
+              "text": "your first few sales, then we can",
+              "offset": 113580,
+              "duration": 1709
+            },
+            {
+              "lang": "en",
+              "text": "upgrade to the basic plan, which is",
+              "offset": 115290,
+              "duration": 1859
+            },
+            {
+              "lang": "en",
+              "text": "$49 a month.",
+              "offset": 117150,
+              "duration": 1799
+            },
+            {
+              "lang": "en",
+              "text": "But what that does is it gives you",
+              "offset": 118950,
+              "duration": 1379
+            },
+            {
+              "lang": "en",
+              "text": "the ability to do more, sending",
+              "offset": 120330,
+              "duration": 1829
+            },
+            {
+              "lang": "en",
+              "text": "more than just, I think, 250 emails",
+              "offset": 122160,
+              "duration": 2009
+            },
+            {
+              "lang": "en",
+              "text": "a day. So you could spend 500, 1000,",
+              "offset": 124170,
+              "duration": 2189
+            },
+            {
+              "lang": "en",
+              "text": "2000 emails a day once you validated",
+              "offset": 126360,
+              "duration": 2308
+            },
+            {
+              "lang": "en",
+              "text": "that this is actually working.",
+              "offset": 128669,
+              "duration": 1529
+            },
+            {
+              "lang": "en",
+              "text": "And I think even more importantly",
+              "offset": 130199,
+              "duration": 1830
+            },
+            {
+              "lang": "en",
+              "text": "is that it allows you to select more",
+              "offset": 132030,
+              "duration": 1559
+            },
+            {
+              "lang": "en",
+              "text": "than 25 leads at a time.",
+              "offset": 133590,
+              "duration": 1979
+            },
+            {
+              "lang": "en",
+              "text": "So I'm going to show you in a moment",
+              "offset": 135570,
+              "duration": 1169
+            },
+            {
+              "lang": "en",
+              "text": "when you're scraping the leads on",
+              "offset": 136740,
+              "duration": 1709
+            },
+            {
+              "lang": "en",
+              "text": "the free plan, you can only select",
+              "offset": 138450,
+              "duration": 1409
+            },
+            {
+              "lang": "en",
+              "text": "25 leads at a time.",
+              "offset": 139860,
+              "duration": 1469
+            },
+            {
+              "lang": "en",
+              "text": "And if you scrape a list of 25,000,",
+              "offset": 141330,
+              "duration": 1799
+            },
+            {
+              "lang": "en",
+              "text": "it would be great. Just a scrape",
+              "offset": 143130,
+              "duration": 1529
+            },
+            {
+              "lang": "en",
+              "text": "list is 25,000.",
+              "offset": 144660,
+              "duration": 959
+            },
+            {
+              "lang": "en",
+              "text": "Select all of them and send them all",
+              "offset": 145620,
+              "duration": 2009
+            },
+            {
+              "lang": "en",
+              "text": "an email without having to kind of",
+              "offset": 147630,
+              "duration": 1709
+            },
+            {
+              "lang": "en",
+              "text": "go back and forth 50 times.",
+              "offset": 149340,
+              "duration": 1319
+            },
+            {
+              "lang": "en",
+              "text": "So it might make sense if you value",
+              "offset": 150660,
+              "duration": 1799
+            },
+            {
+              "lang": "en",
+              "text": "your time just to spend that $49.",
+              "offset": 152460,
+              "duration": 1589
+            },
+            {
+              "lang": "en",
+              "text": "But if you don't, don't worry about",
+              "offset": 154050,
+              "duration": 1469
+            },
+            {
+              "lang": "en",
+              "text": "it. You can get the free plan.",
+              "offset": 155520,
+              "duration": 1289
+            },
+            {
+              "lang": "en",
+              "text": "And then once you close your first",
+              "offset": 156810,
+              "duration": 929
+            },
+            {
+              "lang": "en",
+              "text": "deal, you can sign up for the $49",
+              "offset": 157740,
+              "duration": 1799
+            },
+            {
+              "lang": "en",
+              "text": "one. When you're signing up for",
+              "offset": 159540,
+              "duration": 1469
+            },
+            {
+              "lang": "en",
+              "text": "Apollo, it's really important that",
+              "offset": 161010,
+              "duration": 1259
+            },
+            {
+              "lang": "en",
+              "text": "you try to sign up with your Gmail",
+              "offset": 162270,
+              "duration": 1829
+            },
+            {
+              "lang": "en",
+              "text": "account directly.",
+              "offset": 164100,
+              "duration": 1079
+            },
+            {
+              "lang": "en",
+              "text": "So whenever you're logging in for",
+              "offset": 165180,
+              "duration": 1469
+            },
+            {
+              "lang": "en",
+              "text": "the first time, you can log in, you",
+              "offset": 166650,
+              "duration": 1739
+            },
+            {
+              "lang": "en",
+              "text": "know, with just a name, an email, or",
+              "offset": 168390,
+              "duration": 1079
+            },
+            {
+              "lang": "en",
+              "text": "you can log in with a Gmail account.",
+              "offset": 169470,
+              "duration": 2069
+            },
+            {
+              "lang": "en",
+              "text": "And I would recommend doing that",
+              "offset": 171540,
+              "duration": 1199
+            },
+            {
+              "lang": "en",
+              "text": "because it's just going to\nautomatically",
+              "offset": 172740,
+              "duration": 1559
+            },
+            {
+              "lang": "en",
+              "text": "integrates Apollo and",
+              "offset": 174300,
+              "duration": 2129
+            },
+            {
+              "lang": "en",
+              "text": "your Gmail account for email",
+              "offset": 176430,
+              "duration": 1769
+            },
+            {
+              "lang": "en",
+              "text": "sending. So as soon as we get in",
+              "offset": 178200,
+              "duration": 1319
+            },
+            {
+              "lang": "en",
+              "text": "there, you don't have to integrate",
+              "offset": 179520,
+              "duration": 869
+            },
+            {
+              "lang": "en",
+              "text": "anything else to allow for email",
+              "offset": 180390,
+              "duration": 1709
+            },
+            {
+              "lang": "en",
+              "text": "sending.",
+              "offset": 182100,
+              "duration": 809
+            },
+            {
+              "lang": "en",
+              "text": "If you don't do that, there's a link",
+              "offset": 182910,
+              "duration": 2249
+            },
+            {
+              "lang": "en",
+              "text": "inside this document that can take",
+              "offset": 185160,
+              "duration": 1289
+            },
+            {
+              "lang": "en",
+              "text": "you to integrating your email.",
+              "offset": 186450,
+              "duration": 1529
+            },
+            {
+              "lang": "en",
+              "text": "It's very simple, but my",
+              "offset": 187980,
+              "duration": 1409
+            },
+            {
+              "lang": "en",
+              "text": "recommendation would be to not set",
+              "offset": 189390,
+              "duration": 2009
+            },
+            {
+              "lang": "en",
+              "text": "up your main Gmail account,",
+              "offset": 191400,
+              "duration": 2009
+            },
+            {
+              "lang": "en",
+              "text": "but instead set up a burner email",
+              "offset": 193410,
+              "duration": 2309
+            },
+            {
+              "lang": "en",
+              "text": "address because what we're doing is",
+              "offset": 195720,
+              "duration": 1279
+            },
+            {
+              "lang": "en",
+              "text": "we're gonna be sending 250, 300,",
+              "offset": 197000,
+              "duration": 1969
+            },
+            {
+              "lang": "en",
+              "text": "500 emails a day and you",
+              "offset": 198970,
+              "duration": 1879
+            },
+            {
+              "lang": "en",
+              "text": "don't want your main company email",
+              "offset": 200850,
+              "duration": 2099
+            },
+            {
+              "lang": "en",
+              "text": "that you're going to use for the",
+              "offset": 202950,
+              "duration": 779
+            },
+            {
+              "lang": "en",
+              "text": "next 510 years to be ruined",
+              "offset": 203730,
+              "duration": 2069
+            },
+            {
+              "lang": "en",
+              "text": "by cold email messaging.",
+              "offset": 205800,
+              "duration": 1439
+            },
+            {
+              "lang": "en",
+              "text": "So instead, what I recommend doing",
+              "offset": 207240,
+              "duration": 1319
+            },
+            {
+              "lang": "en",
+              "text": "is creating a burner account.",
+              "offset": 208560,
+              "duration": 1469
+            },
+            {
+              "lang": "en",
+              "text": "So for example, my company",
+              "offset": 210030,
+              "duration": 1859
+            },
+            {
+              "lang": "en",
+              "text": "emails Revit scaling with systems",
+              "offset": 211890,
+              "duration": 1649
+            },
+            {
+              "lang": "en",
+              "text": "dot com, but I can create a burner",
+              "offset": 213540,
+              "duration": 1709
+            },
+            {
+              "lang": "en",
+              "text": "account called Ravi a",
+              "offset": 215250,
+              "duration": 1889
+            },
+            {
+              "lang": "en",
+              "text": "at scaling with systems dot com or",
+              "offset": 217140,
+              "duration": 1859
+            },
+            {
+              "lang": "en",
+              "text": "if I wanted to keep it totally",
+              "offset": 219000,
+              "duration": 1139
+            },
+            {
+              "lang": "en",
+              "text": "separate from my domain, I could buy",
+              "offset": 220140,
+              "duration": 1469
+            },
+            {
+              "lang": "en",
+              "text": "a new domain called scaling w",
+              "offset": 221610,
+              "duration": 2129
+            },
+            {
+              "lang": "en",
+              "text": "systems dot com and use that",
+              "offset": 223740,
+              "duration": 1949
+            },
+            {
+              "lang": "en",
+              "text": "one and do Ravi at scaling",
+              "offset": 225690,
+              "duration": 2309
+            },
+            {
+              "lang": "en",
+              "text": "W systems dot com.",
+              "offset": 228000,
+              "duration": 1349
+            },
+            {
+              "lang": "en",
+              "text": "Now once you get into Apollo there",
+              "offset": 229350,
+              "duration": 1979
+            },
+            {
+              "lang": "en",
+              "text": "are literally dozens of different",
+              "offset": 231330,
+              "duration": 1559
+            },
+            {
+              "lang": "en",
+              "text": "features. But as usual, I'm going to",
+              "offset": 232890,
+              "duration": 1379
+            },
+            {
+              "lang": "en",
+              "text": "show you literally just two that you",
+              "offset": 234270,
+              "duration": 1679
+            },
+            {
+              "lang": "en",
+              "text": "need in order to start generating",
+              "offset": 235950,
+              "duration": 1559
+            },
+            {
+              "lang": "en",
+              "text": "new calls and new clients today.",
+              "offset": 237510,
+              "duration": 2009
+            },
+            {
+              "lang": "en",
+              "text": "So the first thing that we're going",
+              "offset": 239520,
+              "duration": 1229
+            },
+            {
+              "lang": "en",
+              "text": "to want to do here is we're going to",
+              "offset": 240750,
+              "duration": 1079
+            },
+            {
+              "lang": "en",
+              "text": "want to create an email sequence.",
+              "offset": 241830,
+              "duration": 1769
+            },
+            {
+              "lang": "en",
+              "text": "Now, this is a little bit different",
+              "offset": 243600,
+              "duration": 1469
+            },
+            {
+              "lang": "en",
+              "text": "because other people that I hear",
+              "offset": 245070,
+              "duration": 1439
+            },
+            {
+              "lang": "en",
+              "text": "talking about this will talk about",
+              "offset": 246510,
+              "duration": 1319
+            },
+            {
+              "lang": "en",
+              "text": "straight about generating leads.",
+              "offset": 247830,
+              "duration": 1709
+            },
+            {
+              "lang": "en",
+              "text": "But generating leads is useless if",
+              "offset": 249540,
+              "duration": 1799
+            },
+            {
+              "lang": "en",
+              "text": "you don't have the ability to send",
+              "offset": 251340,
+              "duration": 1479
+            },
+            {
+              "lang": "en",
+              "text": "the lead, something that's going to",
+              "offset": 252820,
+              "duration": 1009
+            },
+            {
+              "lang": "en",
+              "text": "turn them into calls in sales for",
+              "offset": 253830,
+              "duration": 1859
+            },
+            {
+              "lang": "en",
+              "text": "your company.",
+              "offset": 255690,
+              "duration": 779
+            },
+            {
+              "lang": "en",
+              "text": "So the first thing I want to do is",
+              "offset": 256470,
+              "duration": 1529
+            },
+            {
+              "lang": "en",
+              "text": "create your email sequence.",
+              "offset": 258000,
+              "duration": 1049
+            },
+            {
+              "lang": "en",
+              "text": "We're going to go over to engage and",
+              "offset": 259050,
+              "duration": 1589
+            },
+            {
+              "lang": "en",
+              "text": "click on sequences right here.",
+              "offset": 260640,
+              "duration": 1889
+            },
+            {
+              "lang": "en",
+              "text": "And then you can see, obviously this",
+              "offset": 262530,
+              "duration": 1229
+            },
+            {
+              "lang": "en",
+              "text": "is a test account, so there's no",
+              "offset": 263760,
+              "duration": 1499
+            },
+            {
+              "lang": "en",
+              "text": "sequences found.",
+              "offset": 265260,
+              "duration": 1229
+            },
+            {
+              "lang": "en",
+              "text": "And what you can do is click this",
+              "offset": 266490,
+              "duration": 1079
+            },
+            {
+              "lang": "en",
+              "text": "little new sequence button right",
+              "offset": 267570,
+              "duration": 1589
+            },
+            {
+              "lang": "en",
+              "text": "here. We're going to click on new,",
+              "offset": 269160,
+              "duration": 1739
+            },
+            {
+              "lang": "en",
+              "text": "create a new sequence, and we're",
+              "offset": 270900,
+              "duration": 1349
+            },
+            {
+              "lang": "en",
+              "text": "going to name it whatever we want",
+              "offset": 272250,
+              "duration": 1019
+            },
+            {
+              "lang": "en",
+              "text": "to, let's say accounting,",
+              "offset": 273270,
+              "duration": 2189
+            },
+            {
+              "lang": "en",
+              "text": "email, marketing, and we're",
+              "offset": 275460,
+              "duration": 1889
+            },
+            {
+              "lang": "en",
+              "text": "going to use normal business hours 8",
+              "offset": 277350,
+              "duration": 1629
+            },
+            {
+              "lang": "en",
+              "text": "to 5 p.m. if you want it to.",
+              "offset": 278980,
+              "duration": 1459
+            },
+            {
+              "lang": "en",
+              "text": "You can kind of edit your schedule",
+              "offset": 280440,
+              "duration": 1289
+            },
+            {
+              "lang": "en",
+              "text": "and make it a little bit earlier a",
+              "offset": 281730,
+              "duration": 1169
+            },
+            {
+              "lang": "en",
+              "text": "little bit later. But for example",
+              "offset": 282900,
+              "duration": 1469
+            },
+            {
+              "lang": "en",
+              "text": "purposes, this is totally fine.",
+              "offset": 284370,
+              "duration": 1529
+            },
+            {
+              "lang": "en",
+              "text": "So click continue and then",
+              "offset": 285900,
+              "duration": 1889
+            },
+            {
+              "lang": "en",
+              "text": "we're going to click on Add a step",
+              "offset": 287790,
+              "duration": 1259
+            },
+            {
+              "lang": "en",
+              "text": "below this and you can see we",
+              "offset": 289050,
+              "duration": 1829
+            },
+            {
+              "lang": "en",
+              "text": "have different opportunities here.",
+              "offset": 290880,
+              "duration": 1169
+            },
+            {
+              "lang": "en",
+              "text": "The opportunity is to send an email,",
+              "offset": 292050,
+              "duration": 1829
+            },
+            {
+              "lang": "en",
+              "text": "we can send a manual email, we can",
+              "offset": 293880,
+              "duration": 1589
+            },
+            {
+              "lang": "en",
+              "text": "do a phone call, an action item.",
+              "offset": 295470,
+              "duration": 1589
+            },
+            {
+              "lang": "en",
+              "text": "Or actually one of the coolest",
+              "offset": 297060,
+              "duration": 1139
+            },
+            {
+              "lang": "en",
+              "text": "things about Apollo is that in a.",
+              "offset": 298200,
+              "duration": 1809
+            },
+            {
+              "lang": "en",
+              "text": "Rachel's LinkedIn so you could send",
+              "offset": 300010,
+              "duration": 1309
+            },
+            {
+              "lang": "en",
+              "text": "LinkedIn connection to request",
+              "offset": 301320,
+              "duration": 1109
+            },
+            {
+              "lang": "en",
+              "text": "LinkedIn messages and that's going",
+              "offset": 302430,
+              "duration": 1529
+            },
+            {
+              "lang": "en",
+              "text": "to be a little bit more advanced.",
+              "offset": 303960,
+              "duration": 1349
+            },
+            {
+              "lang": "en",
+              "text": "Maybe if you guys want me to do a",
+              "offset": 305310,
+              "duration": 899
+            },
+            {
+              "lang": "en",
+              "text": "video on that, you can comment down",
+              "offset": 306210,
+              "duration": 1169
+            },
+            {
+              "lang": "en",
+              "text": "below. But for now we're just",
+              "offset": 307380,
+              "duration": 1379
+            },
+            {
+              "lang": "en",
+              "text": "talking about cold emailing.",
+              "offset": 308760,
+              "duration": 1349
+            },
+            {
+              "lang": "en",
+              "text": "So what I'm going to want to do is",
+              "offset": 310110,
+              "duration": 1379
+            },
+            {
+              "lang": "en",
+              "text": "do an automatic email because our",
+              "offset": 311490,
+              "duration": 1589
+            },
+            {
+              "lang": "en",
+              "text": "eventual goal is to literally just",
+              "offset": 313080,
+              "duration": 1319
+            },
+            {
+              "lang": "en",
+              "text": "scrape a list and blast an email",
+              "offset": 314400,
+              "duration": 1859
+            },
+            {
+              "lang": "en",
+              "text": "out in two clicks of the mouse and",
+              "offset": 316260,
+              "duration": 1889
+            },
+            {
+              "lang": "en",
+              "text": "a manual email.",
+              "offset": 318150,
+              "duration": 839
+            },
+            {
+              "lang": "en",
+              "text": "You'd have to go in and review the",
+              "offset": 318990,
+              "duration": 1439
+            },
+            {
+              "lang": "en",
+              "text": "email before you send it every",
+              "offset": 320430,
+              "duration": 1139
+            },
+            {
+              "lang": "en",
+              "text": "single time.",
+              "offset": 321570,
+              "duration": 779
+            },
+            {
+              "lang": "en",
+              "text": "So let's click on automatic email",
+              "offset": 322350,
+              "duration": 1649
+            },
+            {
+              "lang": "en",
+              "text": "and then I usually like to do",
+              "offset": 324000,
+              "duration": 2249
+            },
+            {
+              "lang": "en",
+              "text": "30 minutes after the contact is",
+              "offset": 326250,
+              "duration": 1619
+            },
+            {
+              "lang": "en",
+              "text": "added, because sometimes you're",
+              "offset": 327870,
+              "duration": 1139
+            },
+            {
+              "lang": "en",
+              "text": "moving pretty quickly and you just",
+              "offset": 329010,
+              "duration": 1649
+            },
+            {
+              "lang": "en",
+              "text": "add a bunch of people and then you",
+              "offset": 330660,
+              "duration": 1469
+            },
+            {
+              "lang": "en",
+              "text": "realize that you shouldn't have",
+              "offset": 332130,
+              "duration": 1019
+            },
+            {
+              "lang": "en",
+              "text": "added that person in that sequence.",
+              "offset": 333150,
+              "duration": 1139
+            },
+            {
+              "lang": "en",
+              "text": "So 30 minutes gives you the",
+              "offset": 334290,
+              "duration": 1499
+            },
+            {
+              "lang": "en",
+              "text": "opportunity to go back in and change",
+              "offset": 335790,
+              "duration": 1439
+            },
+            {
+              "lang": "en",
+              "text": "it if you need to.",
+              "offset": 337230,
+              "duration": 1199
+            },
+            {
+              "lang": "en",
+              "text": "And I don't limit any emails",
+              "offset": 338430,
+              "duration": 2069
+            },
+            {
+              "lang": "en",
+              "text": "for this specific steps.",
+              "offset": 340500,
+              "duration": 869
+            },
+            {
+              "lang": "en",
+              "text": "You don't worry about that. So click",
+              "offset": 341370,
+              "duration": 989
+            },
+            {
+              "lang": "en",
+              "text": "on, continue from here and then",
+              "offset": 342360,
+              "duration": 1739
+            },
+            {
+              "lang": "en",
+              "text": "boom. Now we are inside of",
+              "offset": 344100,
+              "duration": 2519
+            },
+            {
+              "lang": "en",
+              "text": "the email template",
+              "offset": 346620,
+              "duration": 1859
+            },
+            {
+              "lang": "en",
+              "text": "for our sequence for when we scrape",
+              "offset": 348480,
+              "duration": 1919
+            },
+            {
+              "lang": "en",
+              "text": "leads. Now there's",
+              "offset": 350400,
+              "duration": 1949
+            },
+            {
+              "lang": "en",
+              "text": "two really cool features that I like",
+              "offset": 352350,
+              "duration": 1769
+            },
+            {
+              "lang": "en",
+              "text": "about Apollo.",
+              "offset": 354120,
+              "duration": 1229
+            },
+            {
+              "lang": "en",
+              "text": "The first is the ability to use",
+              "offset": 355350,
+              "duration": 2069
+            },
+            {
+              "lang": "en",
+              "text": "AI inside of Apollo to write",
+              "offset": 357420,
+              "duration": 1829
+            },
+            {
+              "lang": "en",
+              "text": "your emails, right?",
+              "offset": 359250,
+              "duration": 1139
+            },
+            {
+              "lang": "en",
+              "text": "So I've already kind of created one",
+              "offset": 360390,
+              "duration": 2159
+            },
+            {
+              "lang": "en",
+              "text": "this year, which I'm going to go",
+              "offset": 362550,
+              "duration": 929
+            },
+            {
+              "lang": "en",
+              "text": "through in a moment of having",
+              "offset": 363480,
+              "duration": 2129
+            },
+            {
+              "lang": "en",
+              "text": "a I wrote the email.",
+              "offset": 365610,
+              "duration": 1199
+            },
+            {
+              "lang": "en",
+              "text": "But the other thing they have is you",
+              "offset": 366810,
+              "duration": 1319
+            },
+            {
+              "lang": "en",
+              "text": "can actually personalize the first",
+              "offset": 368130,
+              "duration": 2099
+            },
+            {
+              "lang": "en",
+              "text": "line of of text",
+              "offset": 370230,
+              "duration": 2279
+            },
+            {
+              "lang": "en",
+              "text": "with Apollo so that",
+              "offset": 372510,
+              "duration": 2119
+            },
+            {
+              "lang": "en",
+              "text": "instead of you always trying to",
+              "offset": 374630,
+              "duration": 1119
+            },
+            {
+              "lang": "en",
+              "text": "figure out, hey, what's this personal",
+              "offset": 375750,
+              "duration": 1289
+            },
+            {
+              "lang": "en",
+              "text": "line that I want to use for this",
+              "offset": 377040,
+              "duration": 989
+            },
+            {
+              "lang": "en",
+              "text": "person, like, Hey, I saw that you",
+              "offset": 378030,
+              "duration": 1229
+            },
+            {
+              "lang": "en",
+              "text": "just had a birthday.",
+              "offset": 379260,
+              "duration": 989
+            },
+            {
+              "lang": "en",
+              "text": "Congratulations.",
+              "offset": 380250,
+              "duration": 929
+            },
+            {
+              "lang": "en",
+              "text": "Apollo actually is working on a",
+              "offset": 381180,
+              "duration": 1529
+            },
+            {
+              "lang": "en",
+              "text": "feature where it will just",
+              "offset": 382710,
+              "duration": 2279
+            },
+            {
+              "lang": "en",
+              "text": "scrape the data for you.",
+              "offset": 384990,
+              "duration": 1259
+            },
+            {
+              "lang": "en",
+              "text": "So that's going to be, I mean, game",
+              "offset": 386250,
+              "duration": 1679
+            },
+            {
+              "lang": "en",
+              "text": "changer, whatever they actually do,",
+              "offset": 387930,
+              "duration": 1469
+            },
+            {
+              "lang": "en",
+              "text": "release that.",
+              "offset": 389400,
+              "duration": 869
+            },
+            {
+              "lang": "en",
+              "text": "But in reality, I have played",
+              "offset": 390270,
+              "duration": 1859
+            },
+            {
+              "lang": "en",
+              "text": "around this with this a little bit,",
+              "offset": 392130,
+              "duration": 1829
+            },
+            {
+              "lang": "en",
+              "text": "and in my experience the",
+              "offset": 393960,
+              "duration": 2249
+            },
+            {
+              "lang": "en",
+              "text": "A.I. is good, but not as",
+              "offset": 396210,
+              "duration": 1949
+            },
+            {
+              "lang": "en",
+              "text": "good as what I'm about to give you.",
+              "offset": 398160,
+              "duration": 1679
+            },
+            {
+              "lang": "en",
+              "text": "I have a separate YouTube video",
+              "offset": 399840,
+              "duration": 1919
+            },
+            {
+              "lang": "en",
+              "text": "that actually goes over an",
+              "offset": 401760,
+              "duration": 2009
+            },
+            {
+              "lang": "en",
+              "text": "email template that has generated",
+              "offset": 403770,
+              "duration": 1469
+            },
+            {
+              "lang": "en",
+              "text": "over $10 million,",
+              "offset": 405240,
+              "duration": 1979
+            },
+            {
+              "lang": "en",
+              "text": "and I link that inside this Google",
+              "offset": 407220,
+              "duration": 1529
+            },
+            {
+              "lang": "en",
+              "text": "document here.",
+              "offset": 408750,
+              "duration": 1019
+            },
+            {
+              "lang": "en",
+              "text": "And what you'll be able to do is",
+              "offset": 409770,
+              "duration": 1079
+            },
+            {
+              "lang": "en",
+              "text": "literally just copy and paste this",
+              "offset": 410850,
+              "duration": 1559
+            },
+            {
+              "lang": "en",
+              "text": "template over into your",
+              "offset": 412410,
+              "duration": 1979
+            },
+            {
+              "lang": "en",
+              "text": "Apollo sequence and you can almost",
+              "offset": 414390,
+              "duration": 2039
+            },
+            {
+              "lang": "en",
+              "text": "guarantee that it's going to be",
+              "offset": 416430,
+              "duration": 1049
+            },
+            {
+              "lang": "en",
+              "text": "successful.",
+              "offset": 417480,
+              "duration": 779
+            },
+            {
+              "lang": "en",
+              "text": "I have literally got hundreds of",
+              "offset": 418260,
+              "duration": 1679
+            },
+            {
+              "lang": "en",
+              "text": "comments and messages from people",
+              "offset": 419940,
+              "duration": 1289
+            },
+            {
+              "lang": "en",
+              "text": "that have used this sequence and",
+              "offset": 421230,
+              "duration": 1139
+            },
+            {
+              "lang": "en",
+              "text": "seen unbelievable success, not",
+              "offset": 422370,
+              "duration": 1649
+            },
+            {
+              "lang": "en",
+              "text": "including our thousands of clients",
+              "offset": 424020,
+              "duration": 1799
+            },
+            {
+              "lang": "en",
+              "text": "that have used it as well.",
+              "offset": 425820,
+              "duration": 839
+            },
+            {
+              "lang": "en",
+              "text": "So I think it's a really good",
+              "offset": 426660,
+              "duration": 1319
+            },
+            {
+              "lang": "en",
+              "text": "starting point. I just want to give",
+              "offset": 427980,
+              "duration": 1049
+            },
+            {
+              "lang": "en",
+              "text": "you it totally for free.",
+              "offset": 429030,
+              "duration": 1499
+            },
+            {
+              "lang": "en",
+              "text": "So what you can do is click the link",
+              "offset": 430530,
+              "duration": 1709
+            },
+            {
+              "lang": "en",
+              "text": "of the Google document and then copy",
+              "offset": 432240,
+              "duration": 1919
+            },
+            {
+              "lang": "en",
+              "text": "everything 1 to 1 over.",
+              "offset": 434160,
+              "duration": 1199
+            },
+            {
+              "lang": "en",
+              "text": "So this is the subject line.",
+              "offset": 435360,
+              "duration": 1119
+            },
+            {
+              "lang": "en",
+              "text": "So I'm going to come down here and",
+              "offset": 436480,
+              "duration": 829
+            },
+            {
+              "lang": "en",
+              "text": "copy the subject line.",
+              "offset": 437310,
+              "duration": 1199
+            },
+            {
+              "lang": "en",
+              "text": "We're going to go back over here and",
+              "offset": 438510,
+              "duration": 1139
+            },
+            {
+              "lang": "en",
+              "text": "copy the subject line, and then",
+              "offset": 439650,
+              "duration": 1739
+            },
+            {
+              "lang": "en",
+              "text": "we're going to go back here and copy",
+              "offset": 441390,
+              "duration": 1679
+            },
+            {
+              "lang": "en",
+              "text": "the body of the original message.",
+              "offset": 443070,
+              "duration": 1799
+            },
+            {
+              "lang": "en",
+              "text": "Right now, there's going to be a",
+              "offset": 444870,
+              "duration": 1349
+            },
+            {
+              "lang": "en",
+              "text": "little bit of editing involved",
+              "offset": 446220,
+              "duration": 1649
+            },
+            {
+              "lang": "en",
+              "text": "because obviously this is a",
+              "offset": 447870,
+              "duration": 1049
+            },
+            {
+              "lang": "en",
+              "text": "template. This isn't for your",
+              "offset": 448920,
+              "duration": 1079
+            },
+            {
+              "lang": "en",
+              "text": "specific business, but let's walk",
+              "offset": 450000,
+              "duration": 1589
+            },
+            {
+              "lang": "en",
+              "text": "through what that would look like,",
+              "offset": 451590,
+              "duration": 929
+            },
+            {
+              "lang": "en",
+              "text": "right? So the subject line needs to",
+              "offset": 452520,
+              "duration": 1439
+            },
+            {
+              "lang": "en",
+              "text": "be interesting enough to open.",
+              "offset": 453960,
+              "duration": 1289
+            },
+            {
+              "lang": "en",
+              "text": "So, you know, one of the ones that",
+              "offset": 455250,
+              "duration": 1379
+            },
+            {
+              "lang": "en",
+              "text": "we love to use is just a question",
+              "offset": 456630,
+              "duration": 1769
+            },
+            {
+              "lang": "en",
+              "text": "about company name.",
+              "offset": 458400,
+              "duration": 1319
+            },
+            {
+              "lang": "en",
+              "text": "So I'm going to erase everything",
+              "offset": 459720,
+              "duration": 1409
+            },
+            {
+              "lang": "en",
+              "text": "except for a question about company.",
+              "offset": 461130,
+              "duration": 1799
+            },
+            {
+              "lang": "en",
+              "text": "And then we're actually going to use",
+              "offset": 462930,
+              "duration": 1409
+            },
+            {
+              "lang": "en",
+              "text": "a dynamic variable directly",
+              "offset": 464340,
+              "duration": 1829
+            },
+            {
+              "lang": "en",
+              "text": "from Apollo or click on this little",
+              "offset": 466170,
+              "duration": 2009
+            },
+            {
+              "lang": "en",
+              "text": "add dynamic variables down here and",
+              "offset": 468180,
+              "duration": 1799
+            },
+            {
+              "lang": "en",
+              "text": "we'll click on a question about",
+              "offset": 469980,
+              "duration": 1739
+            },
+            {
+              "lang": "en",
+              "text": "company right there.",
+              "offset": 471720,
+              "duration": 779
+            },
+            {
+              "lang": "en",
+              "text": "Right? And I'll usually add three",
+              "offset": 472500,
+              "duration": 1529
+            },
+            {
+              "lang": "en",
+              "text": "dots to make it a little bit",
+              "offset": 474030,
+              "duration": 1979
+            },
+            {
+              "lang": "en",
+              "text": "mysterious.",
+              "offset": 476010,
+              "duration": 1139
+            },
+            {
+              "lang": "en",
+              "text": "And then here is where",
+              "offset": 477150,
+              "duration": 2009
+            },
+            {
+              "lang": "en",
+              "text": "the other YouTube video that's",
+              "offset": 479160,
+              "duration": 1469
+            },
+            {
+              "lang": "en",
+              "text": "linked inside of here will be more",
+              "offset": 480630,
+              "duration": 1589
+            },
+            {
+              "lang": "en",
+              "text": "valuable because I don't want spend",
+              "offset": 482220,
+              "duration": 1079
+            },
+            {
+              "lang": "en",
+              "text": "too much time on it about going",
+              "offset": 483300,
+              "duration": 1709
+            },
+            {
+              "lang": "en",
+              "text": "through what the differences of",
+              "offset": 485010,
+              "duration": 959
+            },
+            {
+              "lang": "en",
+              "text": "these are. I would recommend that",
+              "offset": 485970,
+              "duration": 1439
+            },
+            {
+              "lang": "en",
+              "text": "you, after you get access to this",
+              "offset": 487410,
+              "duration": 1919
+            },
+            {
+              "lang": "en",
+              "text": "Google document, you watch that",
+              "offset": 489330,
+              "duration": 1109
+            },
+            {
+              "lang": "en",
+              "text": "video which is linked to this Google",
+              "offset": 490440,
+              "duration": 1169
+            },
+            {
+              "lang": "en",
+              "text": "document. So I'm going to write this",
+              "offset": 491610,
+              "duration": 1619
+            },
+            {
+              "lang": "en",
+              "text": "out here to make it simple.",
+              "offset": 493230,
+              "duration": 1229
+            },
+            {
+              "lang": "en",
+              "text": "So let's say, for example, that we",
+              "offset": 494460,
+              "duration": 2189
+            },
+            {
+              "lang": "en",
+              "text": "run a marketing agency",
+              "offset": 496650,
+              "duration": 1949
+            },
+            {
+              "lang": "en",
+              "text": "for for accountants.",
+              "offset": 498600,
+              "duration": 2289
+            },
+            {
+              "lang": "en",
+              "text": "Let's say we run a marketing agency",
+              "offset": 500890,
+              "duration": 1039
+            },
+            {
+              "lang": "en",
+              "text": "for accountants, and we guarantee",
+              "offset": 501930,
+              "duration": 1229
+            },
+            {
+              "lang": "en",
+              "text": "that we'll get them 20",
+              "offset": 503160,
+              "duration": 2129
+            },
+            {
+              "lang": "en",
+              "text": "new clients",
+              "offset": 505290,
+              "duration": 1000
+            },
+            {
+              "lang": "en",
+              "text": "every year.",
+              "offset": 507420,
+              "duration": 1409
+            },
+            {
+              "lang": "en",
+              "text": "We'll just make it super easy,",
+              "offset": 508830,
+              "duration": 1079
+            },
+            {
+              "lang": "en",
+              "text": "right? So we are we generate",
+              "offset": 509910,
+              "duration": 2339
+            },
+            {
+              "lang": "en",
+              "text": "we a marketing company for",
+              "offset": 512250,
+              "duration": 1319
+            },
+            {
+              "lang": "en",
+              "text": "accountants and we generate 20 new",
+              "offset": 513570,
+              "duration": 1619
+            },
+            {
+              "lang": "en",
+              "text": "clients a year or their money back.",
+              "offset": 515190,
+              "duration": 1978
+            },
+            {
+              "lang": "en",
+              "text": "So the first line here is typically",
+              "offset": 517169,
+              "duration": 1590
+            },
+            {
+              "lang": "en",
+              "text": "the personalized introduction.",
+              "offset": 518760,
+              "duration": 1168
+            },
+            {
+              "lang": "en",
+              "text": "And you have to understand that this",
+              "offset": 519929,
+              "duration": 900
+            },
+            {
+              "lang": "en",
+              "text": "is a text preview, meaning any time",
+              "offset": 520830,
+              "duration": 1769
+            },
+            {
+              "lang": "en",
+              "text": "you send an email to somebody, the",
+              "offset": 522600,
+              "duration": 1949
+            },
+            {
+              "lang": "en",
+              "text": "first like 5 to 10 words",
+              "offset": 524550,
+              "duration": 1889
+            },
+            {
+              "lang": "en",
+              "text": "will always show before they open",
+              "offset": 526440,
+              "duration": 1739
+            },
+            {
+              "lang": "en",
+              "text": "the email. So in order to have a",
+              "offset": 528180,
+              "duration": 1019
+            },
+            {
+              "lang": "en",
+              "text": "high email open rate, you want to",
+              "offset": 529200,
+              "duration": 1769
+            },
+            {
+              "lang": "en",
+              "text": "make sure that you have some kind of",
+              "offset": 530970,
+              "duration": 1229
+            },
+            {
+              "lang": "en",
+              "text": "level of personalization inside of",
+              "offset": 532200,
+              "duration": 1559
+            },
+            {
+              "lang": "en",
+              "text": "here. So that way they are much",
+              "offset": 533760,
+              "duration": 1979
+            },
+            {
+              "lang": "en",
+              "text": "more likely to open it when they see",
+              "offset": 535740,
+              "duration": 1529
+            },
+            {
+              "lang": "en",
+              "text": "that that tax preview.",
+              "offset": 537270,
+              "duration": 1499
+            },
+            {
+              "lang": "en",
+              "text": "So I could say something like",
+              "offset": 538770,
+              "duration": 1499
+            },
+            {
+              "lang": "en",
+              "text": "Hey, and then I'll use a dynamic",
+              "offset": 541350,
+              "duration": 1499
+            },
+            {
+              "lang": "en",
+              "text": "variable to get the first name here.",
+              "offset": 542850,
+              "duration": 2369
+            },
+            {
+              "lang": "en",
+              "text": "First name I",
+              "offset": 545220,
+              "duration": 1859
+            },
+            {
+              "lang": "en",
+              "text": "wanted.",
+              "offset": 547080,
+              "duration": 719
+            },
+            {
+              "lang": "en",
+              "text": "To make sure you",
+              "offset": 547800,
+              "duration": 1979
+            },
+            {
+              "lang": "en",
+              "text": "saw this.",
+              "offset": 549780,
+              "duration": 1499
+            },
+            {
+              "lang": "en",
+              "text": "Is this true.",
+              "offset": 551280,
+              "duration": 1739
+            },
+            {
+              "lang": "en",
+              "text": "About company",
+              "offset": 553020,
+              "duration": 1979
+            },
+            {
+              "lang": "en",
+              "text": "name?",
+              "offset": 555000,
+              "duration": 989
+            },
+            {
+              "lang": "en",
+              "text": "So we'll come down here and just say",
+              "offset": 555990,
+              "duration": 1289
+            },
+            {
+              "lang": "en",
+              "text": "company name.",
+              "offset": 557280,
+              "duration": 929
+            },
+            {
+              "lang": "en",
+              "text": "Question Mark Right.",
+              "offset": 558210,
+              "duration": 1529
+            },
+            {
+              "lang": "en",
+              "text": "So that's going to, you know, if any",
+              "offset": 559740,
+              "duration": 1649
+            },
+            {
+              "lang": "en",
+              "text": "kind if anybody is a business owner",
+              "offset": 561390,
+              "duration": 1589
+            },
+            {
+              "lang": "en",
+              "text": "or they see like, hey, I want to see",
+              "offset": 562980,
+              "duration": 1259
+            },
+            {
+              "lang": "en",
+              "text": "this one is make sure you saw this",
+              "offset": 564240,
+              "duration": 1919
+            },
+            {
+              "lang": "en",
+              "text": "is a true about company name.",
+              "offset": 566160,
+              "duration": 1529
+            },
+            {
+              "lang": "en",
+              "text": "Very good chance that someone's",
+              "offset": 567690,
+              "duration": 1559
+            },
+            {
+              "lang": "en",
+              "text": "going to open that email.",
+              "offset": 569250,
+              "duration": 839
+            },
+            {
+              "lang": "en",
+              "text": "Okay. Even if, like they know that",
+              "offset": 570090,
+              "duration": 2009
+            },
+            {
+              "lang": "en",
+              "text": "it's a sales pitch, just",
+              "offset": 572100,
+              "duration": 2279
+            },
+            {
+              "lang": "en",
+              "text": "it's like curiosity just gets the",
+              "offset": 574380,
+              "duration": 1679
+            },
+            {
+              "lang": "en",
+              "text": "best of them and they're going to",
+              "offset": 576060,
+              "duration": 1049
+            },
+            {
+              "lang": "en",
+              "text": "want to open it. Okay.",
+              "offset": 577110,
+              "duration": 1169
+            },
+            {
+              "lang": "en",
+              "text": "And then is the transformation line.",
+              "offset": 578280,
+              "duration": 1679
+            },
+            {
+              "lang": "en",
+              "text": "So let's say something along the",
+              "offset": 579960,
+              "duration": 1169
+            },
+            {
+              "lang": "en",
+              "text": "lines with",
+              "offset": 581130,
+              "duration": 1000
+            },
+            {
+              "lang": "en",
+              "text": "or let's say here",
+              "offset": 583200,
+              "duration": 2219
+            },
+            {
+              "lang": "en",
+              "text": "we help accounting",
+              "offset": 585420,
+              "duration": 2789
+            },
+            {
+              "lang": "en",
+              "text": "firms",
+              "offset": 588210,
+              "duration": 1000
+            },
+            {
+              "lang": "en",
+              "text": "gets 20 new clients",
+              "offset": 590130,
+              "duration": 2039
+            },
+            {
+              "lang": "en",
+              "text": "a year or",
+              "offset": 592170,
+              "duration": 2039
+            },
+            {
+              "lang": "en",
+              "text": "their money back.",
+              "offset": 594210,
+              "duration": 1920
+            },
+            {
+              "lang": "en",
+              "text": "So that's the transformation.",
+              "offset": 598280,
+              "duration": 1139
+            },
+            {
+              "lang": "en",
+              "text": "Very simple.",
+              "offset": 599420,
+              "duration": 1319
+            },
+            {
+              "lang": "en",
+              "text": "I'm actually going to that combines",
+              "offset": 600740,
+              "duration": 1469
+            },
+            {
+              "lang": "en",
+              "text": "both the transformation and the risk",
+              "offset": 602210,
+              "duration": 1319
+            },
+            {
+              "lang": "en",
+              "text": "reversal. So I'm actually going to",
+              "offset": 603530,
+              "duration": 1349
+            },
+            {
+              "lang": "en",
+              "text": "erase both of these.",
+              "offset": 604880,
+              "duration": 1529
+            },
+            {
+              "lang": "en",
+              "text": "And then we're going to talk about",
+              "offset": 606410,
+              "duration": 1409
+            },
+            {
+              "lang": "en",
+              "text": "social proof. So I've just made a",
+              "offset": 607820,
+              "duration": 1589
+            },
+            {
+              "lang": "en",
+              "text": "big, bold claim.",
+              "offset": 609410,
+              "duration": 929
+            },
+            {
+              "lang": "en",
+              "text": "How can we back it up?",
+              "offset": 610340,
+              "duration": 1559
+            },
+            {
+              "lang": "en",
+              "text": "Right. We've worked.",
+              "offset": 611900,
+              "duration": 1709
+            },
+            {
+              "lang": "en",
+              "text": "With.",
+              "offset": 613610,
+              "duration": 899
+            },
+            {
+              "lang": "en",
+              "text": "Over or actually, let's make",
+              "offset": 614510,
+              "duration": 1919
+            },
+            {
+              "lang": "en",
+              "text": "it simple. The less words, the",
+              "offset": 616430,
+              "duration": 989
+            },
+            {
+              "lang": "en",
+              "text": "better.",
+              "offset": 617420,
+              "duration": 959
+            },
+            {
+              "lang": "en",
+              "text": "296",
+              "offset": 618380,
+              "duration": 1829
+            },
+            {
+              "lang": "en",
+              "text": "plus accounting.",
+              "offset": 620210,
+              "duration": 3119
+            },
+            {
+              "lang": "en",
+              "text": "Firms",
+              "offset": 623330,
+              "duration": 1000
+            },
+            {
+              "lang": "en",
+              "text": "in the past two years.",
+              "offset": 625340,
+              "duration": 2189
+            },
+            {
+              "lang": "en",
+              "text": "And then you can say like a few",
+              "offset": 628820,
+              "duration": 1949
+            },
+            {
+              "lang": "en",
+              "text": "names including I",
+              "offset": 630770,
+              "duration": 1829
+            },
+            {
+              "lang": "en",
+              "text": "don't know really any big famous",
+              "offset": 632600,
+              "duration": 1319
+            },
+            {
+              "lang": "en",
+              "text": "accounting firms. Let's call it",
+              "offset": 633920,
+              "duration": 1829
+            },
+            {
+              "lang": "en",
+              "text": "Garfield's Accounting.",
+              "offset": 635750,
+              "duration": 2280
+            },
+            {
+              "lang": "en",
+              "text": "And.",
+              "offset": 639170,
+              "duration": 1000
+            },
+            {
+              "lang": "en",
+              "text": "KPMG.",
+              "offset": 642130,
+              "duration": 1019
+            },
+            {
+              "lang": "en",
+              "text": "Right.",
+              "offset": 646570,
+              "duration": 689
+            },
+            {
+              "lang": "en",
+              "text": "So now I'm adding social proof",
+              "offset": 647260,
+              "duration": 1949
+            },
+            {
+              "lang": "en",
+              "text": "to convince them, like, Hey, I'm not",
+              "offset": 649210,
+              "duration": 1649
+            },
+            {
+              "lang": "en",
+              "text": "just coming out here. And I just",
+              "offset": 650860,
+              "duration": 1499
+            },
+            {
+              "lang": "en",
+              "text": "made up this email to make a YouTube",
+              "offset": 652360,
+              "duration": 1349
+            },
+            {
+              "lang": "en",
+              "text": "video to you. I actually have worked",
+              "offset": 653710,
+              "duration": 1589
+            },
+            {
+              "lang": "en",
+              "text": "with clients previously in the past.",
+              "offset": 655300,
+              "duration": 1829
+            },
+            {
+              "lang": "en",
+              "text": "And then, of course, we're going to",
+              "offset": 657130,
+              "duration": 1109
+            },
+            {
+              "lang": "en",
+              "text": "want to add our call to action below",
+              "offset": 658240,
+              "duration": 1769
+            },
+            {
+              "lang": "en",
+              "text": "that. So I might say something",
+              "offset": 660010,
+              "duration": 1979
+            },
+            {
+              "lang": "en",
+              "text": "along the lines of based.",
+              "offset": 661990,
+              "duration": 1919
+            },
+            {
+              "lang": "en",
+              "text": "On our initial research",
+              "offset": 663910,
+              "duration": 2639
+            },
+            {
+              "lang": "en",
+              "text": "on.",
+              "offset": 666550,
+              "duration": 1199
+            },
+            {
+              "lang": "en",
+              "text": "Company name.",
+              "offset": 667750,
+              "duration": 779
+            },
+            {
+              "lang": "en",
+              "text": "So we're going to copy this again.",
+              "offset": 668530,
+              "duration": 1680
+            },
+            {
+              "lang": "en",
+              "text": "It seems like we",
+              "offset": 674950,
+              "duration": 2039
+            },
+            {
+              "lang": "en",
+              "text": "may be a great fit",
+              "offset": 676990,
+              "duration": 2249
+            },
+            {
+              "lang": "en",
+              "text": "or we may be able to be able",
+              "offset": 680260,
+              "duration": 2399
+            },
+            {
+              "lang": "en",
+              "text": "to guarantee",
+              "offset": 682660,
+              "duration": 2819
+            },
+            {
+              "lang": "en",
+              "text": "20 new clients or",
+              "offset": 685480,
+              "duration": 2069
+            },
+            {
+              "lang": "en",
+              "text": "your money Back",
+              "offset": 687550,
+              "duration": 1680
+            },
+            {
+              "lang": "en",
+              "text": "book a call",
+              "offset": 692470,
+              "duration": 1499
+            },
+            {
+              "lang": "en",
+              "text": "to speak with us",
+              "offset": 695920,
+              "duration": 2009
+            },
+            {
+              "lang": "en",
+              "text": "here.",
+              "offset": 697930,
+              "duration": 839
+            },
+            {
+              "lang": "en",
+              "text": "And then I would put my calendar",
+              "offset": 698770,
+              "duration": 1109
+            },
+            {
+              "lang": "en",
+              "text": "link right there.",
+              "offset": 699880,
+              "duration": 779
+            },
+            {
+              "lang": "en",
+              "text": "And then if I was feeling really",
+              "offset": 700660,
+              "duration": 1289
+            },
+            {
+              "lang": "en",
+              "text": "saucy, I might say something like.",
+              "offset": 701950,
+              "duration": 1890
+            },
+            {
+              "lang": "en",
+              "text": "P.S.",
+              "offset": 705010,
+              "duration": 1349
+            },
+            {
+              "lang": "en",
+              "text": "If you think",
+              "offset": 706360,
+              "duration": 2519
+            },
+            {
+              "lang": "en",
+              "text": "I wasted your time",
+              "offset": 708880,
+              "duration": 2129
+            },
+            {
+              "lang": "en",
+              "text": "on the call, all",
+              "offset": 711010,
+              "duration": 1799
+            },
+            {
+              "lang": "en",
+              "text": "PayPal you $100,",
+              "offset": 713980,
+              "duration": 2489
+            },
+            {
+              "lang": "en",
+              "text": "Right?",
+              "offset": 716470,
+              "duration": 539
+            },
+            {
+              "lang": "en",
+              "text": "You know, which is not that bad of a",
+              "offset": 717010,
+              "duration": 1139
+            },
+            {
+              "lang": "en",
+              "text": "deal because I have actually done",
+              "offset": 718150,
+              "duration": 1619
+            },
+            {
+              "lang": "en",
+              "text": "this before.",
+              "offset": 719770,
+              "duration": 869
+            },
+            {
+              "lang": "en",
+              "text": "And in three years",
+              "offset": 720640,
+              "duration": 2069
+            },
+            {
+              "lang": "en",
+              "text": "we had one person make me pay",
+              "offset": 722710,
+              "duration": 1479
+            },
+            {
+              "lang": "en",
+              "text": "$4,100.",
+              "offset": 724190,
+              "duration": 889
+            },
+            {
+              "lang": "en",
+              "text": "And in all honesty, that was a",
+              "offset": 725080,
+              "duration": 1619
+            },
+            {
+              "lang": "en",
+              "text": "terrible person. If I'm just and if",
+              "offset": 726700,
+              "duration": 1259
+            },
+            {
+              "lang": "en",
+              "text": "you're watching the city, know",
+              "offset": 727960,
+              "duration": 839
+            },
+            {
+              "lang": "en",
+              "text": "exactly who you are.",
+              "offset": 728800,
+              "duration": 2009
+            },
+            {
+              "lang": "en",
+              "text": "So if you think I waste your time on",
+              "offset": 730810,
+              "duration": 1949
+            },
+            {
+              "lang": "en",
+              "text": "the call, I'll pay value $100,",
+              "offset": 732760,
+              "duration": 1949
+            },
+            {
+              "lang": "en",
+              "text": "period. And then I put my calendar",
+              "offset": 734710,
+              "duration": 1769
+            },
+            {
+              "lang": "en",
+              "text": "link right there. Let's just say",
+              "offset": 736480,
+              "duration": 1289
+            },
+            {
+              "lang": "en",
+              "text": "calendar link,",
+              "offset": 737770,
+              "duration": 1320
+            },
+            {
+              "lang": "en",
+              "text": "right.",
+              "offset": 740200,
+              "duration": 1049
+            },
+            {
+              "lang": "en",
+              "text": "And and then you",
+              "offset": 741250,
+              "duration": 1889
+            },
+            {
+              "lang": "en",
+              "text": "put your additional assets if you",
+              "offset": 743140,
+              "duration": 1559
+            },
+            {
+              "lang": "en",
+              "text": "want to. So if I had, like a",
+              "offset": 744700,
+              "duration": 1349
+            },
+            {
+              "lang": "en",
+              "text": "testimonial, I might drop that",
+              "offset": 746050,
+              "duration": 1319
+            },
+            {
+              "lang": "en",
+              "text": "inside of there and then additional",
+              "offset": 747370,
+              "duration": 1499
+            },
+            {
+              "lang": "en",
+              "text": "calls to action. And then the cool",
+              "offset": 748870,
+              "duration": 1259
+            },
+            {
+              "lang": "en",
+              "text": "thing about Apollo is it will",
+              "offset": 750130,
+              "duration": 1259
+            },
+            {
+              "lang": "en",
+              "text": "automatically add a signature.",
+              "offset": 751390,
+              "duration": 1289
+            },
+            {
+              "lang": "en",
+              "text": "So you don't need to add your\nsignature",
+              "offset": 752680,
+              "duration": 1079
+            },
+            {
+              "lang": "en",
+              "text": "to that. Right.",
+              "offset": 753760,
+              "duration": 899
+            },
+            {
+              "lang": "en",
+              "text": "So just like that, we have now",
+              "offset": 754660,
+              "duration": 1499
+            },
+            {
+              "lang": "en",
+              "text": "written a cold",
+              "offset": 756160,
+              "duration": 1979
+            },
+            {
+              "lang": "en",
+              "text": "email message to accounting firms.",
+              "offset": 758140,
+              "duration": 2039
+            },
+            {
+              "lang": "en",
+              "text": "Okay, Now what I want to do here is",
+              "offset": 760180,
+              "duration": 2189
+            },
+            {
+              "lang": "en",
+              "text": "I'm actually going to copy all",
+              "offset": 762370,
+              "duration": 1949
+            },
+            {
+              "lang": "en",
+              "text": "of this stuff, but I'm going to",
+              "offset": 764320,
+              "duration": 2009
+            },
+            {
+              "lang": "en",
+              "text": "save this template here.",
+              "offset": 766330,
+              "duration": 1439
+            },
+            {
+              "lang": "en",
+              "text": "So let me click Save and now",
+              "offset": 767770,
+              "duration": 1979
+            },
+            {
+              "lang": "en",
+              "text": "I have an automatic email.",
+              "offset": 769750,
+              "duration": 1229
+            },
+            {
+              "lang": "en",
+              "text": "As soon as I add a lead inside of",
+              "offset": 770980,
+              "duration": 1439
+            },
+            {
+              "lang": "en",
+              "text": "here, it is going to automatically",
+              "offset": 772420,
+              "duration": 1559
+            },
+            {
+              "lang": "en",
+              "text": "send an email out to them.",
+              "offset": 773980,
+              "duration": 1769
+            },
+            {
+              "lang": "en",
+              "text": "Now, what I do recommend doing as I",
+              "offset": 775750,
+              "duration": 1679
+            },
+            {
+              "lang": "en",
+              "text": "talk about inside of here is",
+              "offset": 777430,
+              "duration": 2069
+            },
+            {
+              "lang": "en",
+              "text": "to use the follow ups for a higher",
+              "offset": 779500,
+              "duration": 2039
+            },
+            {
+              "lang": "en",
+              "text": "likelihood of replying.",
+              "offset": 781540,
+              "duration": 1049
+            },
+            {
+              "lang": "en",
+              "text": "So if you come back over to this,",
+              "offset": 782590,
+              "duration": 1349
+            },
+            {
+              "lang": "en",
+              "text": "this Google document, what you'll",
+              "offset": 783940,
+              "duration": 1649
+            },
+            {
+              "lang": "en",
+              "text": "get in the description down below,",
+              "offset": 785590,
+              "duration": 1739
+            },
+            {
+              "lang": "en",
+              "text": "it does a follow up 14 hours later.",
+              "offset": 787330,
+              "duration": 1649
+            },
+            {
+              "lang": "en",
+              "text": "So we want to make sure we add a",
+              "offset": 788980,
+              "duration": 929
+            },
+            {
+              "lang": "en",
+              "text": "follow up here.",
+              "offset": 789910,
+              "duration": 809
+            },
+            {
+              "lang": "en",
+              "text": "So we'll add a step in automatic",
+              "offset": 790720,
+              "duration": 1949
+            },
+            {
+              "lang": "en",
+              "text": "email.",
+              "offset": 792670,
+              "duration": 839
+            },
+            {
+              "lang": "en",
+              "text": "And what I'll do is make it",
+              "offset": 793510,
+              "duration": 1079
+            },
+            {
+              "lang": "en",
+              "text": "literally 14 minutes",
+              "offset": 794590,
+              "duration": 2369
+            },
+            {
+              "lang": "en",
+              "text": "after the previous step, right?",
+              "offset": 796960,
+              "duration": 1349
+            },
+            {
+              "lang": "en",
+              "text": "Because that's I mean, 14 hours I'm",
+              "offset": 798310,
+              "duration": 1889
+            },
+            {
+              "lang": "en",
+              "text": "sorry, 14 hours after the previous",
+              "offset": 800200,
+              "duration": 1469
+            },
+            {
+              "lang": "en",
+              "text": "step. So we'll click on continue.",
+              "offset": 801670,
+              "duration": 1770
+            },
+            {
+              "lang": "en",
+              "text": "And then this is very important.",
+              "offset": 805150,
+              "duration": 1769
+            },
+            {
+              "lang": "en",
+              "text": "Okay, Make sure you click on reply",
+              "offset": 806920,
+              "duration": 1919
+            },
+            {
+              "lang": "en",
+              "text": "to previous thread.",
+              "offset": 808840,
+              "duration": 1259
+            },
+            {
+              "lang": "en",
+              "text": "That way it's always in the same,",
+              "offset": 810100,
+              "duration": 2189
+            },
+            {
+              "lang": "en",
+              "text": "the same email thread and the person",
+              "offset": 812290,
+              "duration": 1829
+            },
+            {
+              "lang": "en",
+              "text": "doesn't have to go through every",
+              "offset": 814120,
+              "duration": 1229
+            },
+            {
+              "lang": "en",
+              "text": "single time what you do and how you",
+              "offset": 815350,
+              "duration": 1469
+            },
+            {
+              "lang": "en",
+              "text": "help people, etc., etc..",
+              "offset": 816820,
+              "duration": 1289
+            },
+            {
+              "lang": "en",
+              "text": "They just remember it.",
+              "offset": 818110,
+              "duration": 839
+            },
+            {
+              "lang": "en",
+              "text": "Okay, because it's inside the same",
+              "offset": 818950,
+              "duration": 1469
+            },
+            {
+              "lang": "en",
+              "text": "email thread. And then what we want",
+              "offset": 820420,
+              "duration": 1589
+            },
+            {
+              "lang": "en",
+              "text": "to do is come back over to call the",
+              "offset": 822010,
+              "duration": 1139
+            },
+            {
+              "lang": "en",
+              "text": "sequence. We just need to do a",
+              "offset": 823150,
+              "duration": 869
+            },
+            {
+              "lang": "en",
+              "text": "transformation and a call to action.",
+              "offset": 824020,
+              "duration": 1949
+            },
+            {
+              "lang": "en",
+              "text": "So we'll come here.",
+              "offset": 825970,
+              "duration": 1049
+            },
+            {
+              "lang": "en",
+              "text": "I'm going to paste what I did before",
+              "offset": 827020,
+              "duration": 1679
+            },
+            {
+              "lang": "en",
+              "text": "and and then I'm going to make the",
+              "offset": 828700,
+              "duration": 1799
+            },
+            {
+              "lang": "en",
+              "text": "transformation claim.",
+              "offset": 830500,
+              "duration": 959
+            },
+            {
+              "lang": "en",
+              "text": "So let me say first",
+              "offset": 831460,
+              "duration": 2009
+            },
+            {
+              "lang": "en",
+              "text": "name.",
+              "offset": 833470,
+              "duration": 1109
+            },
+            {
+              "lang": "en",
+              "text": "Let's see here. Adding variables.",
+              "offset": 834580,
+              "duration": 1769
+            },
+            {
+              "lang": "en",
+              "text": "First name.",
+              "offset": 836350,
+              "duration": 1000
+            },
+            {
+              "lang": "en",
+              "text": "Are you interested",
+              "offset": 838390,
+              "duration": 1919
+            },
+            {
+              "lang": "en",
+              "text": "at all in 20",
+              "offset": 840310,
+              "duration": 2309
+            },
+            {
+              "lang": "en",
+              "text": "new clients or your",
+              "offset": 842620,
+              "duration": 2039
+            },
+            {
+              "lang": "en",
+              "text": "money back?",
+              "offset": 844660,
+              "duration": 1000
+            },
+            {
+              "lang": "en",
+              "text": "Then I'll just erase everything and",
+              "offset": 851130,
+              "duration": 1199
+            },
+            {
+              "lang": "en",
+              "text": "just say, literally. Booker called",
+              "offset": 852330,
+              "duration": 989
+            },
+            {
+              "lang": "en",
+              "text": "to speak with us here, and if you",
+              "offset": 853320,
+              "duration": 1499
+            },
+            {
+              "lang": "en",
+              "text": "think we're wasting your time, we'll",
+              "offset": 854820,
+              "duration": 869
+            },
+            {
+              "lang": "en",
+              "text": "pay back you $100.",
+              "offset": 855690,
+              "duration": 1229
+            },
+            {
+              "lang": "en",
+              "text": "So very short, sweet to",
+              "offset": 856920,
+              "duration": 1979
+            },
+            {
+              "lang": "en",
+              "text": "the points and much more likely",
+              "offset": 858900,
+              "duration": 1979
+            },
+            {
+              "lang": "en",
+              "text": "to get a response that if I type",
+              "offset": 860880,
+              "duration": 1379
+            },
+            {
+              "lang": "en",
+              "text": "this like huge, you know, 16",
+              "offset": 862260,
+              "duration": 2099
+            },
+            {
+              "lang": "en",
+              "text": "paragraph email to myself.",
+              "offset": 864360,
+              "duration": 2399
+            },
+            {
+              "lang": "en",
+              "text": "Okay, so now that's our second",
+              "offset": 866760,
+              "duration": 1649
+            },
+            {
+              "lang": "en",
+              "text": "sequence if you wanted to.",
+              "offset": 868410,
+              "duration": 1019
+            },
+            {
+              "lang": "en",
+              "text": "I'm not going to do it for the\npurpose",
+              "offset": 869430,
+              "duration": 929
+            },
+            {
+              "lang": "en",
+              "text": "of this video, but you could do the",
+              "offset": 870360,
+              "duration": 1019
+            },
+            {
+              "lang": "en",
+              "text": "third sequence of four sequence.",
+              "offset": 871380,
+              "duration": 1169
+            },
+            {
+              "lang": "en",
+              "text": "First sequence. I do think that",
+              "offset": 872550,
+              "duration": 1319
+            },
+            {
+              "lang": "en",
+              "text": "after three three sequences, it's",
+              "offset": 873870,
+              "duration": 1379
+            },
+            {
+              "lang": "en",
+              "text": "kind of the point of diminishing",
+              "offset": 875250,
+              "duration": 1379
+            },
+            {
+              "lang": "en",
+              "text": "returns. So I wouldn't focus too",
+              "offset": 876630,
+              "duration": 1649
+            },
+            {
+              "lang": "en",
+              "text": "much on that.",
+              "offset": 878280,
+              "duration": 1259
+            },
+            {
+              "lang": "en",
+              "text": "And then the final two things",
+              "offset": 879540,
+              "duration": 2189
+            },
+            {
+              "lang": "en",
+              "text": "that we want to do, actually,",
+              "offset": 881730,
+              "duration": 1019
+            },
+            {
+              "lang": "en",
+              "text": "technically final three things is",
+              "offset": 882750,
+              "duration": 1949
+            },
+            {
+              "lang": "en",
+              "text": "first and foremost, you're going to",
+              "offset": 884700,
+              "duration": 1799
+            },
+            {
+              "lang": "en",
+              "text": "want to consider creating",
+              "offset": 886500,
+              "duration": 1829
+            },
+            {
+              "lang": "en",
+              "text": "an AB split test.",
+              "offset": 888330,
+              "duration": 1109
+            },
+            {
+              "lang": "en",
+              "text": "Now, you can't do an absolute test",
+              "offset": 889440,
+              "duration": 1649
+            },
+            {
+              "lang": "en",
+              "text": "on the free trial, but if you do get",
+              "offset": 891090,
+              "duration": 2009
+            },
+            {
+              "lang": "en",
+              "text": "a pay trial, then I would recommend",
+              "offset": 893100,
+              "duration": 1889
+            },
+            {
+              "lang": "en",
+              "text": "on the first email doing a split",
+              "offset": 894990,
+              "duration": 1889
+            },
+            {
+              "lang": "en",
+              "text": "test to see which one works better",
+              "offset": 896880,
+              "duration": 1679
+            },
+            {
+              "lang": "en",
+              "text": "and what you can do.",
+              "offset": 898560,
+              "duration": 1349
+            },
+            {
+              "lang": "en",
+              "text": "And what I talk about inside of here",
+              "offset": 899910,
+              "duration": 1619
+            },
+            {
+              "lang": "en",
+              "text": "is actually using a I to write",
+              "offset": 901530,
+              "duration": 1979
+            },
+            {
+              "lang": "en",
+              "text": "the split test. So if I come back in",
+              "offset": 903510,
+              "duration": 1619
+            },
+            {
+              "lang": "en",
+              "text": "here and let's just say I redo",
+              "offset": 905130,
+              "duration": 2009
+            },
+            {
+              "lang": "en",
+              "text": "this email here, I want, I want",
+              "offset": 907140,
+              "duration": 2579
+            },
+            {
+              "lang": "en",
+              "text": "the air to generate it for me, then",
+              "offset": 909720,
+              "duration": 2069
+            },
+            {
+              "lang": "en",
+              "text": "it's going to ask for the",
+              "offset": 911790,
+              "duration": 1209
+            },
+            {
+              "lang": "en",
+              "text": "assistance. So scaling all systems,",
+              "offset": 913000,
+              "duration": 1429
+            },
+            {
+              "lang": "en",
+              "text": "the company name we build end to end",
+              "offset": 914430,
+              "duration": 1739
+            },
+            {
+              "lang": "en",
+              "text": "marketing systems for companies, the",
+              "offset": 916170,
+              "duration": 1889
+            },
+            {
+              "lang": "en",
+              "text": "pain point, our businesses that are",
+              "offset": 918060,
+              "duration": 1199
+            },
+            {
+              "lang": "en",
+              "text": "struggling with not enough leads,",
+              "offset": 919260,
+              "duration": 1109
+            },
+            {
+              "lang": "en",
+              "text": "calls and sales and don't know how",
+              "offset": 920370,
+              "duration": 1139
+            },
+            {
+              "lang": "en",
+              "text": "to grow their business.",
+              "offset": 921510,
+              "duration": 1049
+            },
+            {
+              "lang": "en",
+              "text": "And we literally money back",
+              "offset": 922560,
+              "duration": 1109
+            },
+            {
+              "lang": "en",
+              "text": "guarantee that they will",
+              "offset": 923670,
+              "duration": 2189
+            },
+            {
+              "lang": "en",
+              "text": "make money or that our system",
+              "offset": 925860,
+              "duration": 1889
+            },
+            {
+              "lang": "en",
+              "text": "will work, or we give them all their",
+              "offset": 927750,
+              "duration": 1739
+            },
+            {
+              "lang": "en",
+              "text": "money back. And that's in writing.",
+              "offset": 929490,
+              "duration": 2519
+            },
+            {
+              "lang": "en",
+              "text": "And then the call to action is book",
+              "offset": 932010,
+              "duration": 1589
+            },
+            {
+              "lang": "en",
+              "text": "a call to speak with us.",
+              "offset": 933600,
+              "duration": 959
+            },
+            {
+              "lang": "en",
+              "text": "Right. So let me generate here.",
+              "offset": 934560,
+              "duration": 1619
+            },
+            {
+              "lang": "en",
+              "text": "All right. So as you can see here,",
+              "offset": 936180,
+              "duration": 1319
+            },
+            {
+              "lang": "en",
+              "text": "it's given me two subject lines.",
+              "offset": 937500,
+              "duration": 1469
+            },
+            {
+              "lang": "en",
+              "text": "Grow your business with us,",
+              "offset": 938970,
+              "duration": 989
+            },
+            {
+              "lang": "en",
+              "text": "transform your business scaling",
+              "offset": 939960,
+              "duration": 1349
+            },
+            {
+              "lang": "en",
+              "text": "systems. And like I said before, I",
+              "offset": 941310,
+              "duration": 1679
+            },
+            {
+              "lang": "en",
+              "text": "is a little like that.",
+              "offset": 942990,
+              "duration": 1269
+            },
+            {
+              "lang": "en",
+              "text": "That seems like something that like",
+              "offset": 944260,
+              "duration": 1219
+            },
+            {
+              "lang": "en",
+              "text": "a poor email writer would use.",
+              "offset": 945480,
+              "duration": 1849
+            },
+            {
+              "lang": "en",
+              "text": "So you could actually refresh it",
+              "offset": 947330,
+              "duration": 999
+            },
+            {
+              "lang": "en",
+              "text": "right here and try to get something",
+              "offset": 948330,
+              "duration": 1439
+            },
+            {
+              "lang": "en",
+              "text": "different. I doubt it's going to top",
+              "offset": 949770,
+              "duration": 2189
+            },
+            {
+              "lang": "en",
+              "text": "the customization over here, and",
+              "offset": 951960,
+              "duration": 1799
+            },
+            {
+              "lang": "en",
+              "text": "then you could choose the body if",
+              "offset": 953760,
+              "duration": 989
+            },
+            {
+              "lang": "en",
+              "text": "you wanted to as well.",
+              "offset": 954750,
+              "duration": 809
+            },
+            {
+              "lang": "en",
+              "text": "Right? And you can kind of see these",
+              "offset": 955560,
+              "duration": 1499
+            },
+            {
+              "lang": "en",
+              "text": "aren't bad by any means, but",
+              "offset": 957060,
+              "duration": 2129
+            },
+            {
+              "lang": "en",
+              "text": "I think they're good templates to",
+              "offset": 959190,
+              "duration": 1169
+            },
+            {
+              "lang": "en",
+              "text": "use. And if you wanted to split",
+              "offset": 960360,
+              "duration": 1019
+            },
+            {
+              "lang": "en",
+              "text": "test, you could use it and you can",
+              "offset": 961380,
+              "duration": 1379
+            },
+            {
+              "lang": "en",
+              "text": "actually like or dislike it, watch",
+              "offset": 962760,
+              "duration": 1439
+            },
+            {
+              "lang": "en",
+              "text": "or train the air to give you a",
+              "offset": 964200,
+              "duration": 1529
+            },
+            {
+              "lang": "en",
+              "text": "better example.",
+              "offset": 965730,
+              "duration": 1259
+            },
+            {
+              "lang": "en",
+              "text": "But I'm going to keep what I have in",
+              "offset": 966990,
+              "duration": 1439
+            },
+            {
+              "lang": "en",
+              "text": "here for now, because in all",
+              "offset": 968430,
+              "duration": 1109
+            },
+            {
+              "lang": "en",
+              "text": "honesty, I think that I'm a better",
+              "offset": 969540,
+              "duration": 1289
+            },
+            {
+              "lang": "en",
+              "text": "writer than at least what this air",
+              "offset": 970830,
+              "duration": 2039
+            },
+            {
+              "lang": "en",
+              "text": "shows right now.",
+              "offset": 972870,
+              "duration": 1169
+            },
+            {
+              "lang": "en",
+              "text": "And then the final step, Always,",
+              "offset": 974040,
+              "duration": 1529
+            },
+            {
+              "lang": "en",
+              "text": "always, always, before you launch a",
+              "offset": 975570,
+              "duration": 1649
+            },
+            {
+              "lang": "en",
+              "text": "campaign like you're going to want",
+              "offset": 977220,
+              "duration": 929
+            },
+            {
+              "lang": "en",
+              "text": "to send a test emails, you're going",
+              "offset": 978150,
+              "duration": 1469
+            },
+            {
+              "lang": "en",
+              "text": "to like send test email to me, and",
+              "offset": 979620,
+              "duration": 1769
+            },
+            {
+              "lang": "en",
+              "text": "then it's going to send an email",
+              "offset": 981390,
+              "duration": 1109
+            },
+            {
+              "lang": "en",
+              "text": "over to my email inbox.",
+              "offset": 982500,
+              "duration": 1019
+            },
+            {
+              "lang": "en",
+              "text": "Let me pull that up really quickly.",
+              "offset": 983520,
+              "duration": 1109
+            },
+            {
+              "lang": "en",
+              "text": "Okay. So this was in my email inbox",
+              "offset": 984630,
+              "duration": 1769
+            },
+            {
+              "lang": "en",
+              "text": "instantaneously.",
+              "offset": 986400,
+              "duration": 809
+            },
+            {
+              "lang": "en",
+              "text": "Hey, example, want to make sure you",
+              "offset": 987210,
+              "duration": 1499
+            },
+            {
+              "lang": "en",
+              "text": "saw this is is true about Google.",
+              "offset": 988710,
+              "duration": 2219
+            },
+            {
+              "lang": "en",
+              "text": "We help accounting firms, blah,",
+              "offset": 990930,
+              "duration": 1259
+            },
+            {
+              "lang": "en",
+              "text": "blah, blah blah and everything else",
+              "offset": 992190,
+              "duration": 1709
+            },
+            {
+              "lang": "en",
+              "text": "looks super solid there.",
+              "offset": 993900,
+              "duration": 839
+            },
+            {
+              "lang": "en",
+              "text": "I think it looks great.",
+              "offset": 994740,
+              "duration": 1169
+            },
+            {
+              "lang": "en",
+              "text": "There's no problems with it.",
+              "offset": 995910,
+              "duration": 809
+            },
+            {
+              "lang": "en",
+              "text": "Looks like someone actually wrote",
+              "offset": 996720,
+              "duration": 1019
+            },
+            {
+              "lang": "en",
+              "text": "it, so we are good to go.",
+              "offset": 997740,
+              "duration": 2039
+            },
+            {
+              "lang": "en",
+              "text": "So let me cancel.",
+              "offset": 999780,
+              "duration": 1199
+            },
+            {
+              "lang": "en",
+              "text": "And the final thing that you need to",
+              "offset": 1000980,
+              "duration": 1799
+            },
+            {
+              "lang": "en",
+              "text": "make sure you do is you need to turn",
+              "offset": 1002780,
+              "duration": 1739
+            },
+            {
+              "lang": "en",
+              "text": "this active.",
+              "offset": 1004520,
+              "duration": 929
+            },
+            {
+              "lang": "en",
+              "text": "Okay? So make sure you click on",
+              "offset": 1005450,
+              "duration": 1709
+            },
+            {
+              "lang": "en",
+              "text": "active on there. I talked about this",
+              "offset": 1007160,
+              "duration": 1259
+            },
+            {
+              "lang": "en",
+              "text": "and said turn the emails sequence",
+              "offset": 1008420,
+              "duration": 1169
+            },
+            {
+              "lang": "en",
+              "text": "active. If you don't, then you can",
+              "offset": 1009590,
+              "duration": 1589
+            },
+            {
+              "lang": "en",
+              "text": "send all the leads you want to over",
+              "offset": 1011180,
+              "duration": 1019
+            },
+            {
+              "lang": "en",
+              "text": "there, but it won't actually start",
+              "offset": 1012200,
+              "duration": 1169
+            },
+            {
+              "lang": "en",
+              "text": "sending. All right.",
+              "offset": 1013370,
+              "duration": 869
+            },
+            {
+              "lang": "en",
+              "text": "So for step number three, what we're",
+              "offset": 1014240,
+              "duration": 1349
+            },
+            {
+              "lang": "en",
+              "text": "going to want to do is create our",
+              "offset": 1015590,
+              "duration": 1589
+            },
+            {
+              "lang": "en",
+              "text": "lead list.",
+              "offset": 1017180,
+              "duration": 989
+            },
+            {
+              "lang": "en",
+              "text": "Okay, So inside of Apollo,",
+              "offset": 1018170,
+              "duration": 1919
+            },
+            {
+              "lang": "en",
+              "text": "you can see there is this little",
+              "offset": 1020090,
+              "duration": 1259
+            },
+            {
+              "lang": "en",
+              "text": "search feature right here.",
+              "offset": 1021350,
+              "duration": 1319
+            },
+            {
+              "lang": "en",
+              "text": "And you have people, companies and",
+              "offset": 1022670,
+              "duration": 1438
+            },
+            {
+              "lang": "en",
+              "text": "lists. We're going to want to start",
+              "offset": 1024109,
+              "duration": 1229
+            },
+            {
+              "lang": "en",
+              "text": "with people. That's going to be the",
+              "offset": 1025339,
+              "duration": 900
+            },
+            {
+              "lang": "en",
+              "text": "easiest thing to do.",
+              "offset": 1026240,
+              "duration": 1199
+            },
+            {
+              "lang": "en",
+              "text": "And that's also kind of when you",
+              "offset": 1027440,
+              "duration": 1888
+            },
+            {
+              "lang": "en",
+              "text": "are on the free plan, there's going",
+              "offset": 1029329,
+              "duration": 1259
+            },
+            {
+              "lang": "en",
+              "text": "to be more features here than there",
+              "offset": 1030589,
+              "duration": 960
+            },
+            {
+              "lang": "en",
+              "text": "are elsewhere.",
+              "offset": 1031550,
+              "duration": 808
+            },
+            {
+              "lang": "en",
+              "text": "So we're going to want to create the",
+              "offset": 1032359,
+              "duration": 1499
+            },
+            {
+              "lang": "en",
+              "text": "list of people that we're sending",
+              "offset": 1033859,
+              "duration": 1860
+            },
+            {
+              "lang": "en",
+              "text": "the emails to in the sequence that",
+              "offset": 1035720,
+              "duration": 1618
+            },
+            {
+              "lang": "en",
+              "text": "we just created.",
+              "offset": 1037339,
+              "duration": 1050
+            },
+            {
+              "lang": "en",
+              "text": "That's why we start with the",
+              "offset": 1038390,
+              "duration": 919
+            },
+            {
+              "lang": "en",
+              "text": "sequence first so that it's a lot",
+              "offset": 1039310,
+              "duration": 1808
+            },
+            {
+              "lang": "en",
+              "text": "easier. Okay, Now Apollo",
+              "offset": 1041119,
+              "duration": 2160
+            },
+            {
+              "lang": "en",
+              "text": "has its own email database, so",
+              "offset": 1043280,
+              "duration": 1828
+            },
+            {
+              "lang": "en",
+              "text": "you can use that to scrape your",
+              "offset": 1045109,
+              "duration": 1170
+            },
+            {
+              "lang": "en",
+              "text": "emails and it's a really, really",
+              "offset": 1046280,
+              "duration": 1379
+            },
+            {
+              "lang": "en",
+              "text": "great place to start.",
+              "offset": 1047660,
+              "duration": 1529
+            },
+            {
+              "lang": "en",
+              "text": "I will say that once you do start",
+              "offset": 1049190,
+              "duration": 2009
+            },
+            {
+              "lang": "en",
+              "text": "making money from Apollo, I would",
+              "offset": 1051200,
+              "duration": 1379
+            },
+            {
+              "lang": "en",
+              "text": "recommend investing into a higher",
+              "offset": 1052580,
+              "duration": 1919
+            },
+            {
+              "lang": "en",
+              "text": "plan so that way you can get access",
+              "offset": 1054500,
+              "duration": 1829
+            },
+            {
+              "lang": "en",
+              "text": "to more filters like, you know,",
+              "offset": 1056330,
+              "duration": 1349
+            },
+            {
+              "lang": "en",
+              "text": "revenue or some of the other",
+              "offset": 1057680,
+              "duration": 1859
+            },
+            {
+              "lang": "en",
+              "text": "things in there that you can't use",
+              "offset": 1059540,
+              "duration": 1619
+            },
+            {
+              "lang": "en",
+              "text": "unless you have a paid plan.",
+              "offset": 1061160,
+              "duration": 1649
+            },
+            {
+              "lang": "en",
+              "text": "I will say that there is kind of a",
+              "offset": 1062810,
+              "duration": 1529
+            },
+            {
+              "lang": "en",
+              "text": "hack to get around this is that",
+              "offset": 1064340,
+              "duration": 1439
+            },
+            {
+              "lang": "en",
+              "text": "Apollo has a Google Chrome extension",
+              "offset": 1065780,
+              "duration": 2219
+            },
+            {
+              "lang": "en",
+              "text": "that integrates with LinkedIn.",
+              "offset": 1068000,
+              "duration": 1559
+            },
+            {
+              "lang": "en",
+              "text": "So what you could do is you could",
+              "offset": 1069560,
+              "duration": 1769
+            },
+            {
+              "lang": "en",
+              "text": "use the Google Chrome extension on",
+              "offset": 1071330,
+              "duration": 1499
+            },
+            {
+              "lang": "en",
+              "text": "LinkedIn and LinkedIn for free.",
+              "offset": 1072830,
+              "duration": 2189
+            },
+            {
+              "lang": "en",
+              "text": "Well, you have to have Sales\nNavigator,",
+              "offset": 1075020,
+              "duration": 1139
+            },
+            {
+              "lang": "en",
+              "text": "but it will show you like the",
+              "offset": 1076160,
+              "duration": 1679
+            },
+            {
+              "lang": "en",
+              "text": "revenue count, the employee account,",
+              "offset": 1077840,
+              "duration": 1469
+            },
+            {
+              "lang": "en",
+              "text": "a lot of stuff that Apollo won't",
+              "offset": 1079310,
+              "duration": 1439
+            },
+            {
+              "lang": "en",
+              "text": "show you. And in my experience,",
+              "offset": 1080750,
+              "duration": 2639
+            },
+            {
+              "lang": "en",
+              "text": "LinkedIn is a little bit more",
+              "offset": 1083390,
+              "duration": 1289
+            },
+            {
+              "lang": "en",
+              "text": "accurate than Apollo.",
+              "offset": 1084680,
+              "duration": 1019
+            },
+            {
+              "lang": "en",
+              "text": "So kind of a hack is to go",
+              "offset": 1085700,
+              "duration": 2009
+            },
+            {
+              "lang": "en",
+              "text": "and get the Apollo Google Chrome",
+              "offset": 1087710,
+              "duration": 1589
+            },
+            {
+              "lang": "en",
+              "text": "extension and then use LinkedIn",
+              "offset": 1089300,
+              "duration": 1379
+            },
+            {
+              "lang": "en",
+              "text": "Sales Navigator, which as usual,",
+              "offset": 1090680,
+              "duration": 2219
+            },
+            {
+              "lang": "en",
+              "text": "I have amazing videos on.",
+              "offset": 1092900,
+              "duration": 1649
+            },
+            {
+              "lang": "en",
+              "text": "I mean, this video is 40 minutes.",
+              "offset": 1094550,
+              "duration": 1289
+            },
+            {
+              "lang": "en",
+              "text": "I think this video is 30 minutes on",
+              "offset": 1095840,
+              "duration": 1439
+            },
+            {
+              "lang": "en",
+              "text": "how to use LinkedIn Sales Navigator.",
+              "offset": 1097280,
+              "duration": 1499
+            },
+            {
+              "lang": "en",
+              "text": "That's actually my number one video",
+              "offset": 1098780,
+              "duration": 959
+            },
+            {
+              "lang": "en",
+              "text": "on YouTube. And then how to use",
+              "offset": 1099740,
+              "duration": 1919
+            },
+            {
+              "lang": "en",
+              "text": "Boolean searches to find higher",
+              "offset": 1101660,
+              "duration": 1229
+            },
+            {
+              "lang": "en",
+              "text": "quality people. So that's going to",
+              "offset": 1102890,
+              "duration": 1019
+            },
+            {
+              "lang": "en",
+              "text": "be in that Google document that I",
+              "offset": 1103910,
+              "duration": 1529
+            },
+            {
+              "lang": "en",
+              "text": "talked about below.",
+              "offset": 1105440,
+              "duration": 869
+            },
+            {
+              "lang": "en",
+              "text": "But let's just use the people",
+              "offset": 1106310,
+              "duration": 1139
+            },
+            {
+              "lang": "en",
+              "text": "feature inside of Apollo for now.",
+              "offset": 1107450,
+              "duration": 1889
+            },
+            {
+              "lang": "en",
+              "text": "So once we scroll down here,",
+              "offset": 1109340,
+              "duration": 2219
+            },
+            {
+              "lang": "en",
+              "text": "you're going to want to create a new",
+              "offset": 1111560,
+              "duration": 1589
+            },
+            {
+              "lang": "en",
+              "text": "lead list with the most",
+              "offset": 1113150,
+              "duration": 1829
+            },
+            {
+              "lang": "en",
+              "text": "qualified filters possible.",
+              "offset": 1114980,
+              "duration": 1859
+            },
+            {
+              "lang": "en",
+              "text": "Okay. So don't try to like just",
+              "offset": 1116840,
+              "duration": 2039
+            },
+            {
+              "lang": "en",
+              "text": "blast every single person in the",
+              "offset": 1118880,
+              "duration": 1289
+            },
+            {
+              "lang": "en",
+              "text": "world because what we're trying to",
+              "offset": 1120170,
+              "duration": 989
+            },
+            {
+              "lang": "en",
+              "text": "do, especially when you're on the",
+              "offset": 1121160,
+              "duration": 1019
+            },
+            {
+              "lang": "en",
+              "text": "free plan, is try to just get",
+              "offset": 1122180,
+              "duration": 1979
+            },
+            {
+              "lang": "en",
+              "text": "a first few leads or a first few",
+              "offset": 1124160,
+              "duration": 1799
+            },
+            {
+              "lang": "en",
+              "text": "calls or first few sales.",
+              "offset": 1125960,
+              "duration": 1589
+            },
+            {
+              "lang": "en",
+              "text": "What I see a lot of he'll do is they",
+              "offset": 1127550,
+              "duration": 1319
+            },
+            {
+              "lang": "en",
+              "text": "just like create this",
+              "offset": 1128870,
+              "duration": 2009
+            },
+            {
+              "lang": "en",
+              "text": "basic email template and then they",
+              "offset": 1130880,
+              "duration": 1799
+            },
+            {
+              "lang": "en",
+              "text": "send 50,000 people to them with",
+              "offset": 1132680,
+              "duration": 1889
+            },
+            {
+              "lang": "en",
+              "text": "no kind of qualification and they",
+              "offset": 1134570,
+              "duration": 1379
+            },
+            {
+              "lang": "en",
+              "text": "wonder why it doesn't work.",
+              "offset": 1135950,
+              "duration": 1079
+            },
+            {
+              "lang": "en",
+              "text": "Right? Instead, I'd rather you",
+              "offset": 1137030,
+              "duration": 1469
+            },
+            {
+              "lang": "en",
+              "text": "create a spend some time creating a",
+              "offset": 1138500,
+              "duration": 1409
+            },
+            {
+              "lang": "en",
+              "text": "really good email template and then",
+              "offset": 1139910,
+              "duration": 1229
+            },
+            {
+              "lang": "en",
+              "text": "send a thousand people through it",
+              "offset": 1141140,
+              "duration": 1919
+            },
+            {
+              "lang": "en",
+              "text": "and then use that to split tested.",
+              "offset": 1143060,
+              "duration": 1979
+            },
+            {
+              "lang": "en",
+              "text": "And then once you get it, validate",
+              "offset": 1145040,
+              "duration": 1499
+            },
+            {
+              "lang": "en",
+              "text": "it, then we can send it to more and",
+              "offset": 1146540,
+              "duration": 1499
+            },
+            {
+              "lang": "en",
+              "text": "more people. Okay.",
+              "offset": 1148040,
+              "duration": 1519
+            },
+            {
+              "lang": "en",
+              "text": "So what we're going to want to do is",
+              "offset": 1149560,
+              "duration": 1469
+            },
+            {
+              "lang": "en",
+              "text": "come to the left hand side here and",
+              "offset": 1151030,
+              "duration": 1229
+            },
+            {
+              "lang": "en",
+              "text": "use these filters to create a",
+              "offset": 1152260,
+              "duration": 2189
+            },
+            {
+              "lang": "en",
+              "text": "list of people. Now, remember, we're",
+              "offset": 1154450,
+              "duration": 1169
+            },
+            {
+              "lang": "en",
+              "text": "serving accounting",
+              "offset": 1155620,
+              "duration": 1889
+            },
+            {
+              "lang": "en",
+              "text": "firms. Okay, So we",
+              "offset": 1157510,
+              "duration": 1859
+            },
+            {
+              "lang": "en",
+              "text": "want to come down to the",
+              "offset": 1159370,
+              "duration": 2189
+            },
+            {
+              "lang": "en",
+              "text": "the job titles right here.",
+              "offset": 1161560,
+              "duration": 1439
+            },
+            {
+              "lang": "en",
+              "text": "So LIST is obviously if you have",
+              "offset": 1163000,
+              "duration": 1679
+            },
+            {
+              "lang": "en",
+              "text": "previous list, persona would be like",
+              "offset": 1164680,
+              "duration": 1589
+            },
+            {
+              "lang": "en",
+              "text": "if you wanted to build a type of",
+              "offset": 1166270,
+              "duration": 1139
+            },
+            {
+              "lang": "en",
+              "text": "person inside of Apollo name",
+              "offset": 1167410,
+              "duration": 1979
+            },
+            {
+              "lang": "en",
+              "text": "would be literally you want to",
+              "offset": 1169390,
+              "duration": 839
+            },
+            {
+              "lang": "en",
+              "text": "search by their name.",
+              "offset": 1170230,
+              "duration": 1019
+            },
+            {
+              "lang": "en",
+              "text": "But my recommendation would be job",
+              "offset": 1171250,
+              "duration": 1289
+            },
+            {
+              "lang": "en",
+              "text": "titles, but not by job titles.",
+              "offset": 1172540,
+              "duration": 1649
+            },
+            {
+              "lang": "en",
+              "text": "Actually, if you scroll down a lot",
+              "offset": 1174190,
+              "duration": 1049
+            },
+            {
+              "lang": "en",
+              "text": "of you'll notice there's management",
+              "offset": 1175240,
+              "duration": 1709
+            },
+            {
+              "lang": "en",
+              "text": "level. This is a lot easier to use",
+              "offset": 1176950,
+              "duration": 1619
+            },
+            {
+              "lang": "en",
+              "text": "and it will give you more of",
+              "offset": 1178570,
+              "duration": 1709
+            },
+            {
+              "lang": "en",
+              "text": "results. So I do owner, founder,",
+              "offset": 1180280,
+              "duration": 2369
+            },
+            {
+              "lang": "en",
+              "text": "C-suite and partner.",
+              "offset": 1182650,
+              "duration": 1529
+            },
+            {
+              "lang": "en",
+              "text": "So these are people that are,",
+              "offset": 1184180,
+              "duration": 2339
+            },
+            {
+              "lang": "en",
+              "text": "that are owners, founders, c-suites",
+              "offset": 1186520,
+              "duration": 1829
+            },
+            {
+              "lang": "en",
+              "text": "or partners of the company and a.k.a",
+              "offset": 1188350,
+              "duration": 1979
+            },
+            {
+              "lang": "en",
+              "text": "their decision makers.",
+              "offset": 1190330,
+              "duration": 1349
+            },
+            {
+              "lang": "en",
+              "text": "If you're not going to measure",
+              "offset": 1191680,
+              "duration": 779
+            },
+            {
+              "lang": "en",
+              "text": "decision maker, then it doesn't",
+              "offset": 1192460,
+              "duration": 1379
+            },
+            {
+              "lang": "en",
+              "text": "matter unless you're serving people",
+              "offset": 1193840,
+              "duration": 1419
+            },
+            {
+              "lang": "en",
+              "text": "that are decision makers.",
+              "offset": 1195260,
+              "duration": 1129
+            },
+            {
+              "lang": "en",
+              "text": "But by definition if they were,",
+              "offset": 1196390,
+              "duration": 2039
+            },
+            {
+              "lang": "en",
+              "text": "you're serving those people, they",
+              "offset": 1198430,
+              "duration": 869
+            },
+            {
+              "lang": "en",
+              "text": "are decision makers.",
+              "offset": 1199300,
+              "duration": 1289
+            },
+            {
+              "lang": "en",
+              "text": "But if you best somebody else, then",
+              "offset": 1200590,
+              "duration": 1349
+            },
+            {
+              "lang": "en",
+              "text": "if it extends the sales cycle",
+              "offset": 1201940,
+              "duration": 1319
+            },
+            {
+              "lang": "en",
+              "text": "unnecessarily. Long Okay.",
+              "offset": 1203260,
+              "duration": 1529
+            },
+            {
+              "lang": "en",
+              "text": "So the first one is job titles.",
+              "offset": 1204790,
+              "duration": 1559
+            },
+            {
+              "lang": "en",
+              "text": "The second one, as I talk about",
+              "offset": 1206350,
+              "duration": 1499
+            },
+            {
+              "lang": "en",
+              "text": "inside of year, is going to be the",
+              "offset": 1207850,
+              "duration": 1619
+            },
+            {
+              "lang": "en",
+              "text": "location, which for us is going to",
+              "offset": 1209470,
+              "duration": 1619
+            },
+            {
+              "lang": "en",
+              "text": "be United States. I only serve",
+              "offset": 1211090,
+              "duration": 2249
+            },
+            {
+              "lang": "en",
+              "text": "accounting firms, the United States",
+              "offset": 1213340,
+              "duration": 1349
+            },
+            {
+              "lang": "en",
+              "text": "in this example. So let's type in",
+              "offset": 1214690,
+              "duration": 1169
+            },
+            {
+              "lang": "en",
+              "text": "United States, right?",
+              "offset": 1215860,
+              "duration": 1469
+            },
+            {
+              "lang": "en",
+              "text": "This brings us down to 3 million",
+              "offset": 1217330,
+              "duration": 1739
+            },
+            {
+              "lang": "en",
+              "text": "total people so far.",
+              "offset": 1219070,
+              "duration": 1469
+            },
+            {
+              "lang": "en",
+              "text": "Then we're going to want to only",
+              "offset": 1220540,
+              "duration": 1229
+            },
+            {
+              "lang": "en",
+              "text": "serve people that have one",
+              "offset": 1221770,
+              "duration": 1199
+            },
+            {
+              "lang": "en",
+              "text": "accounting firms that have 1 to 10",
+              "offset": 1222970,
+              "duration": 1289
+            },
+            {
+              "lang": "en",
+              "text": "employees. Now, why is employees",
+              "offset": 1224260,
+              "duration": 1709
+            },
+            {
+              "lang": "en",
+              "text": "important?",
+              "offset": 1225970,
+              "duration": 809
+            },
+            {
+              "lang": "en",
+              "text": "Employees are important because",
+              "offset": 1226780,
+              "duration": 1799
+            },
+            {
+              "lang": "en",
+              "text": "larger firms like, let's say, 11 to",
+              "offset": 1228580,
+              "duration": 1859
+            },
+            {
+              "lang": "en",
+              "text": "20 or 21 to 50 or 51 to",
+              "offset": 1230440,
+              "duration": 2029
+            },
+            {
+              "lang": "en",
+              "text": "100, they're going to have in-house",
+              "offset": 1232470,
+              "duration": 2169
+            },
+            {
+              "lang": "en",
+              "text": "a lot of the stuff that a 1 to",
+              "offset": 1234640,
+              "duration": 1969
+            },
+            {
+              "lang": "en",
+              "text": "10 firm wouldn't, for example, add 1",
+              "offset": 1236610,
+              "duration": 1789
+            },
+            {
+              "lang": "en",
+              "text": "to 10 employees.",
+              "offset": 1238400,
+              "duration": 1039
+            },
+            {
+              "lang": "en",
+              "text": "Very likely the owner is still doing",
+              "offset": 1239440,
+              "duration": 1769
+            },
+            {
+              "lang": "en",
+              "text": "the marketing and the and the sales",
+              "offset": 1241210,
+              "duration": 1739
+            },
+            {
+              "lang": "en",
+              "text": "and they're doing probably",
+              "offset": 1242950,
+              "duration": 809
+            },
+            {
+              "lang": "en",
+              "text": "everything.",
+              "offset": 1243760,
+              "duration": 929
+            },
+            {
+              "lang": "en",
+              "text": "And at 11 to 20, there's a",
+              "offset": 1244690,
+              "duration": 1859
+            },
+            {
+              "lang": "en",
+              "text": "good chance that the owner already",
+              "offset": 1246550,
+              "duration": 1439
+            },
+            {
+              "lang": "en",
+              "text": "has a marketing team.",
+              "offset": 1247990,
+              "duration": 1019
+            },
+            {
+              "lang": "en",
+              "text": "So it's important that you decide",
+              "offset": 1249010,
+              "duration": 1739
+            },
+            {
+              "lang": "en",
+              "text": "which one of these employees,",
+              "offset": 1250750,
+              "duration": 2219
+            },
+            {
+              "lang": "en",
+              "text": "which which people you",
+              "offset": 1252970,
+              "duration": 1889
+            },
+            {
+              "lang": "en",
+              "text": "would serve based on who your ideal",
+              "offset": 1254860,
+              "duration": 1919
+            },
+            {
+              "lang": "en",
+              "text": "avatar is. Okay.",
+              "offset": 1256780,
+              "duration": 1439
+            },
+            {
+              "lang": "en",
+              "text": "And then what we'll do is come down",
+              "offset": 1258220,
+              "duration": 1079
+            },
+            {
+              "lang": "en",
+              "text": "to industry and keywords and we're",
+              "offset": 1259300,
+              "duration": 1799
+            },
+            {
+              "lang": "en",
+              "text": "going to click on industries and we",
+              "offset": 1261100,
+              "duration": 1079
+            },
+            {
+              "lang": "en",
+              "text": "click on accounting.",
+              "offset": 1262180,
+              "duration": 1499
+            },
+            {
+              "lang": "en",
+              "text": "Now, that was very easy.",
+              "offset": 1263680,
+              "duration": 1499
+            },
+            {
+              "lang": "en",
+              "text": "You might have to go through a",
+              "offset": 1265180,
+              "duration": 989
+            },
+            {
+              "lang": "en",
+              "text": "little bit of different things here.",
+              "offset": 1266170,
+              "duration": 1079
+            },
+            {
+              "lang": "en",
+              "text": "Like, for example, if I was",
+              "offset": 1267250,
+              "duration": 1589
+            },
+            {
+              "lang": "en",
+              "text": "surveying, let's say, real estate",
+              "offset": 1268840,
+              "duration": 1739
+            },
+            {
+              "lang": "en",
+              "text": "agents, then what I might do is",
+              "offset": 1270580,
+              "duration": 1919
+            },
+            {
+              "lang": "en",
+              "text": "let me clear out this industry",
+              "offset": 1272500,
+              "duration": 1049
+            },
+            {
+              "lang": "en",
+              "text": "keyword. I'd probably clear out the",
+              "offset": 1273550,
+              "duration": 1589
+            },
+            {
+              "lang": "en",
+              "text": "number of employees, I'd even clear",
+              "offset": 1275140,
+              "duration": 1859
+            },
+            {
+              "lang": "en",
+              "text": "out the management level, and I",
+              "offset": 1277000,
+              "duration": 1739
+            },
+            {
+              "lang": "en",
+              "text": "would just come in here and say,",
+              "offset": 1278740,
+              "duration": 1379
+            },
+            {
+              "lang": "en",
+              "text": "Let's see, real.",
+              "offset": 1280120,
+              "duration": 1319
+            },
+            {
+              "lang": "en",
+              "text": "Estate agent, There we go.",
+              "offset": 1281440,
+              "duration": 1979
+            },
+            {
+              "lang": "en",
+              "text": "And let's do real estate broker",
+              "offset": 1283420,
+              "duration": 2489
+            },
+            {
+              "lang": "en",
+              "text": "real.",
+              "offset": 1285910,
+              "duration": 1000
+            },
+            {
+              "lang": "en",
+              "text": "Estate broker.",
+              "offset": 1287380,
+              "duration": 1000
+            },
+            {
+              "lang": "en",
+              "text": "Cool. So this gives me 241,000.",
+              "offset": 1290180,
+              "duration": 1829
+            },
+            {
+              "lang": "en",
+              "text": "So you're going to have to learn to",
+              "offset": 1292010,
+              "duration": 1409
+            },
+            {
+              "lang": "en",
+              "text": "kind of play around with it a little",
+              "offset": 1293420,
+              "duration": 1139
+            },
+            {
+              "lang": "en",
+              "text": "bit. And my recommendation is always",
+              "offset": 1294560,
+              "duration": 1319
+            },
+            {
+              "lang": "en",
+              "text": "to look at their LinkedIn profile.",
+              "offset": 1295880,
+              "duration": 1199
+            },
+            {
+              "lang": "en",
+              "text": "So another great thing about Apollo",
+              "offset": 1297080,
+              "duration": 1499
+            },
+            {
+              "lang": "en",
+              "text": "is that it gives you all their",
+              "offset": 1298580,
+              "duration": 1049
+            },
+            {
+              "lang": "en",
+              "text": "LinkedIn profiles.",
+              "offset": 1299630,
+              "duration": 1049
+            },
+            {
+              "lang": "en",
+              "text": "So instead of like guessing,",
+              "offset": 1300680,
+              "duration": 1919
+            },
+            {
+              "lang": "en",
+              "text": "just pull up like five or six of",
+              "offset": 1302600,
+              "duration": 1559
+            },
+            {
+              "lang": "en",
+              "text": "these different things, profile",
+              "offset": 1304160,
+              "duration": 1129
+            },
+            {
+              "lang": "en",
+              "text": "profiles. So let me just pull up one",
+              "offset": 1305290,
+              "duration": 1059
+            },
+            {
+              "lang": "en",
+              "text": "of these.",
+              "offset": 1306350,
+              "duration": 1000
+            },
+            {
+              "lang": "en",
+              "text": "So this is a real estate broker and",
+              "offset": 1309190,
+              "duration": 1319
+            },
+            {
+              "lang": "en",
+              "text": "a real estate agent right here.",
+              "offset": 1310510,
+              "duration": 1349
+            },
+            {
+              "lang": "en",
+              "text": "So that makes sense.",
+              "offset": 1311860,
+              "duration": 1139
+            },
+            {
+              "lang": "en",
+              "text": "And then over here as well, real",
+              "offset": 1313000,
+              "duration": 1229
+            },
+            {
+              "lang": "en",
+              "text": "estate agent at 21 century.",
+              "offset": 1314230,
+              "duration": 2039
+            },
+            {
+              "lang": "en",
+              "text": "So these are my quality qualified",
+              "offset": 1316270,
+              "duration": 2639
+            },
+            {
+              "lang": "en",
+              "text": "ideal avatar.",
+              "offset": 1318910,
+              "duration": 989
+            },
+            {
+              "lang": "en",
+              "text": "So I would probably use this list if",
+              "offset": 1319900,
+              "duration": 1439
+            },
+            {
+              "lang": "en",
+              "text": "I was serving real estate agents.",
+              "offset": 1321340,
+              "duration": 1289
+            },
+            {
+              "lang": "en",
+              "text": "But let's go back now to accounting.",
+              "offset": 1322630,
+              "duration": 2189
+            },
+            {
+              "lang": "en",
+              "text": "Okay. Just to recap the list that we",
+              "offset": 1324820,
+              "duration": 1829
+            },
+            {
+              "lang": "en",
+              "text": "have right now, we're going to send",
+              "offset": 1326650,
+              "duration": 959
+            },
+            {
+              "lang": "en",
+              "text": "an email to is there",
+              "offset": 1327610,
+              "duration": 1869
+            },
+            {
+              "lang": "en",
+              "text": "are owners, founders, C-suites or",
+              "offset": 1329480,
+              "duration": 1759
+            },
+            {
+              "lang": "en",
+              "text": "partners there in the United States.",
+              "offset": 1331240,
+              "duration": 2219
+            },
+            {
+              "lang": "en",
+              "text": "They have one or ten employees and",
+              "offset": 1333460,
+              "duration": 1409
+            },
+            {
+              "lang": "en",
+              "text": "they're in the accounting industry.",
+              "offset": 1334870,
+              "duration": 1799
+            },
+            {
+              "lang": "en",
+              "text": "Okay. And I've opened up a few of",
+              "offset": 1336670,
+              "duration": 1709
+            },
+            {
+              "lang": "en",
+              "text": "these and verified that this is",
+              "offset": 1338380,
+              "duration": 959
+            },
+            {
+              "lang": "en",
+              "text": "exactly who I want to be sending",
+              "offset": 1339340,
+              "duration": 1259
+            },
+            {
+              "lang": "en",
+              "text": "emails to.",
+              "offset": 1340600,
+              "duration": 839
+            },
+            {
+              "lang": "en",
+              "text": "This is the magic part right",
+              "offset": 1341440,
+              "duration": 1829
+            },
+            {
+              "lang": "en",
+              "text": "here. This is why we took the",
+              "offset": 1343270,
+              "duration": 1859
+            },
+            {
+              "lang": "en",
+              "text": "time that we did in the beginning to",
+              "offset": 1345130,
+              "duration": 989
+            },
+            {
+              "lang": "en",
+              "text": "set the sequence, because all I'm",
+              "offset": 1346120,
+              "duration": 1259
+            },
+            {
+              "lang": "en",
+              "text": "really going to do is click on this",
+              "offset": 1347380,
+              "duration": 1889
+            },
+            {
+              "lang": "en",
+              "text": "button right here. Now, in the free",
+              "offset": 1349270,
+              "duration": 1349
+            },
+            {
+              "lang": "en",
+              "text": "plan, you'll see that I can only",
+              "offset": 1350620,
+              "duration": 2009
+            },
+            {
+              "lang": "en",
+              "text": "select 25 people",
+              "offset": 1352630,
+              "duration": 1859
+            },
+            {
+              "lang": "en",
+              "text": "because I only have the free",
+              "offset": 1354490,
+              "duration": 1919
+            },
+            {
+              "lang": "en",
+              "text": "plan. But if you had the paid plan,",
+              "offset": 1356410,
+              "duration": 1859
+            },
+            {
+              "lang": "en",
+              "text": "you can literally select every",
+              "offset": 1358270,
+              "duration": 1259
+            },
+            {
+              "lang": "en",
+              "text": "single person inside of here.",
+              "offset": 1359530,
+              "duration": 1499
+            },
+            {
+              "lang": "en",
+              "text": "But for this example, I'm going to",
+              "offset": 1361030,
+              "duration": 1319
+            },
+            {
+              "lang": "en",
+              "text": "select let's like three people, and",
+              "offset": 1362350,
+              "duration": 2009
+            },
+            {
+              "lang": "en",
+              "text": "then I'm going to come here to the",
+              "offset": 1364360,
+              "duration": 1259
+            },
+            {
+              "lang": "en",
+              "text": "sequence button and I click add to",
+              "offset": 1365620,
+              "duration": 1889
+            },
+            {
+              "lang": "en",
+              "text": "existing sequence, and then I",
+              "offset": 1367510,
+              "duration": 2159
+            },
+            {
+              "lang": "en",
+              "text": "click accounts, email marketing,",
+              "offset": 1369670,
+              "duration": 2009
+            },
+            {
+              "lang": "en",
+              "text": "and then you're seeing the emails",
+              "offset": 1371680,
+              "duration": 1019
+            },
+            {
+              "lang": "en",
+              "text": "from you and you",
+              "offset": 1372700,
+              "duration": 1949
+            },
+            {
+              "lang": "en",
+              "text": "don't want to send the emails if",
+              "offset": 1374650,
+              "duration": 1829
+            },
+            {
+              "lang": "en",
+              "text": "Apollo couldn't find their verified",
+              "offset": 1376480,
+              "duration": 1949
+            },
+            {
+              "lang": "en",
+              "text": "emails because that's how you would",
+              "offset": 1378430,
+              "duration": 1109
+            },
+            {
+              "lang": "en",
+              "text": "trash your email domain.",
+              "offset": 1379540,
+              "duration": 1499
+            },
+            {
+              "lang": "en",
+              "text": "So make sure that you, you",
+              "offset": 1381040,
+              "duration": 2009
+            },
+            {
+              "lang": "en",
+              "text": "keep that unchecked and then you'll",
+              "offset": 1383050,
+              "duration": 1529
+            },
+            {
+              "lang": "en",
+              "text": "click on confirm right here.",
+              "offset": 1384580,
+              "duration": 2069
+            },
+            {
+              "lang": "en",
+              "text": "And literally just like that, in",
+              "offset": 1386650,
+              "duration": 1559
+            },
+            {
+              "lang": "en",
+              "text": "less than 30 minutes, we have set up",
+              "offset": 1388210,
+              "duration": 2099
+            },
+            {
+              "lang": "en",
+              "text": "a very likely high converting",
+              "offset": 1390310,
+              "duration": 2429
+            },
+            {
+              "lang": "en",
+              "text": "email campaign and already started",
+              "offset": 1392740,
+              "duration": 1559
+            },
+            {
+              "lang": "en",
+              "text": "sending our first people there.",
+              "offset": 1394300,
+              "duration": 899
+            },
+            {
+              "lang": "en",
+              "text": "And if we wanted to validate it, we",
+              "offset": 1395200,
+              "duration": 1019
+            },
+            {
+              "lang": "en",
+              "text": "can go back to sequences and you can",
+              "offset": 1396220,
+              "duration": 1799
+            },
+            {
+              "lang": "en",
+              "text": "see that there's three active people",
+              "offset": 1398020,
+              "duration": 1529
+            },
+            {
+              "lang": "en",
+              "text": "inside of here currently.",
+              "offset": 1399550,
+              "duration": 1499
+            },
+            {
+              "lang": "en",
+              "text": "And remember, it has that 30 minute",
+              "offset": 1401050,
+              "duration": 1799
+            },
+            {
+              "lang": "en",
+              "text": "delay just to make sure that we're",
+              "offset": 1402850,
+              "duration": 1139
+            },
+            {
+              "lang": "en",
+              "text": "not sending people. If I was like,",
+              "offset": 1403990,
+              "duration": 1169
+            },
+            {
+              "lang": "en",
+              "text": "Oh no, I don't want to send to these",
+              "offset": 1405160,
+              "duration": 1019
+            },
+            {
+              "lang": "en",
+              "text": "people, I could remove them from",
+              "offset": 1406180,
+              "duration": 1649
+            },
+            {
+              "lang": "en",
+              "text": "this or turn the sequence off before",
+              "offset": 1407830,
+              "duration": 1859
+            },
+            {
+              "lang": "en",
+              "text": "it would send anybody over.",
+              "offset": 1409690,
+              "duration": 1079
+            },
+            {
+              "lang": "en",
+              "text": "Make sure to click the link in the",
+              "offset": 1410770,
+              "duration": 929
+            },
+            {
+              "lang": "en",
+              "text": "description down below to get access",
+              "offset": 1411700,
+              "duration": 1349
+            },
+            {
+              "lang": "en",
+              "text": "to this entire Google document so",
+              "offset": 1413050,
+              "duration": 1499
+            },
+            {
+              "lang": "en",
+              "text": "you can set this up by yourself.",
+              "offset": 1414550,
+              "duration": 1349
+            }
+          ]
+        }
+      }
+    ],
+    "Code in JavaScript1": [
+      {
+        "json": {
+          "fullTranscript": "I'm going to show you how to generate tens of thousands of highly qualified leads in a matter of minutes. But more importantly, I'm going to show you exactly how you can turn those tens of thousands of leads into qualified booked calls for your company and eventually clients. Now, our portfolio companies has literally generated millions of different leads online. And I can say that this is probably one of the easiest and simple to use softwares that I've ever seen. And I'm going to break it down for you in this video here. So the software is called Apollo.io and I'm going to walk you through exactly how to find the most qualified people on the software. I'm going to give you our messaging that you can use to set up an email sequence and then show you some cool features and tips that I don't see anybody else talking about on YouTube. Now, really quickly, before I continue, I'm going to be reading directly off of this Google document that I created that goes through step by step, how to do everything. It also links to a bunch of assets that I can't cover in this YouTube video here that will make getting clients online a lot easier for you. So if you want that, make sure you click the link description down below. So probably one of my favorite things about Apollo Dot IO is that you can actually scrape qualified leads and send emails to them all inside the same software and it gives you really, really good filters as I'm going to walk through here in a moment to make sure that you're only sending the most qualified people. And also it gives you opportunities to split test different emails, use a AI to write emails for you. So if you're looking for like a one stop shop of how do I generate tens of thousands of leads and hundreds of boat calls for your company, this is going to be it. Now, one of the really great things I like about Apollo is that actually they have a free plan here, and that's exactly all you need to get started. And that's we're going to be using in this video. So the first step that we're going to want to do is sign up for Apollo dot IO. If you get this Google document, there'll be a special link inside of here, but you can also just Google it. And we want to start with a free plan, okay? Because once you get your first few sales, then we can upgrade to the basic plan, which is $49 a month. But what that does is it gives you the ability to do more, sending more than just, I think, 250 emails a day. So you could spend 500, 1000, 2000 emails a day once you validated that this is actually working. And I think even more importantly is that it allows you to select more than 25 leads at a time. So I'm going to show you in a moment when you're scraping the leads on the free plan, you can only select 25 leads at a time. And if you scrape a list of 25,000, it would be great. Just a scrape list is 25,000. Select all of them and send them all an email without having to kind of go back and forth 50 times. So it might make sense if you value your time just to spend that $49. But if you don't, don't worry about it. You can get the free plan. And then once you close your first deal, you can sign up for the $49 one. When you're signing up for Apollo, it's really important that you try to sign up with your Gmail account directly. So whenever you're logging in for the first time, you can log in, you know, with just a name, an email, or you can log in with a Gmail account. And I would recommend doing that because it's just going to\nautomatically integrates Apollo and your Gmail account for email sending. So as soon as we get in there, you don't have to integrate anything else to allow for email sending. If you don't do that, there's a link inside this document that can take you to integrating your email. It's very simple, but my recommendation would be to not set up your main Gmail account, but instead set up a burner email address because what we're doing is we're gonna be sending 250, 300, 500 emails a day and you don't want your main company email that you're going to use for the next 510 years to be ruined by cold email messaging. So instead, what I recommend doing is creating a burner account. So for example, my company emails Revit scaling with systems dot com, but I can create a burner account called Ravi a at scaling with systems dot com or if I wanted to keep it totally separate from my domain, I could buy a new domain called scaling w systems dot com and use that one and do Ravi at scaling W systems dot com. Now once you get into Apollo there are literally dozens of different features. But as usual, I'm going to show you literally just two that you need in order to start generating new calls and new clients today. So the first thing that we're going to want to do here is we're going to want to create an email sequence. Now, this is a little bit different because other people that I hear talking about this will talk about straight about generating leads. But generating leads is useless if you don't have the ability to send the lead, something that's going to turn them into calls in sales for your company. So the first thing I want to do is create your email sequence. We're going to go over to engage and click on sequences right here. And then you can see, obviously this is a test account, so there's no sequences found. And what you can do is click this little new sequence button right here. We're going to click on new, create a new sequence, and we're going to name it whatever we want to, let's say accounting, email, marketing, and we're going to use normal business hours 8 to 5 p.m. if you want it to. You can kind of edit your schedule and make it a little bit earlier a little bit later. But for example purposes, this is totally fine. So click continue and then we're going to click on Add a step below this and you can see we have different opportunities here. The opportunity is to send an email, we can send a manual email, we can do a phone call, an action item. Or actually one of the coolest things about Apollo is that in a. Rachel's LinkedIn so you could send LinkedIn connection to request LinkedIn messages and that's going to be a little bit more advanced. Maybe if you guys want me to do a video on that, you can comment down below. But for now we're just talking about cold emailing. So what I'm going to want to do is do an automatic email because our eventual goal is to literally just scrape a list and blast an email out in two clicks of the mouse and a manual email. You'd have to go in and review the email before you send it every single time. So let's click on automatic email and then I usually like to do 30 minutes after the contact is added, because sometimes you're moving pretty quickly and you just add a bunch of people and then you realize that you shouldn't have added that person in that sequence. So 30 minutes gives you the opportunity to go back in and change it if you need to. And I don't limit any emails for this specific steps. You don't worry about that. So click on, continue from here and then boom. Now we are inside of the email template for our sequence for when we scrape leads. Now there's two really cool features that I like about Apollo. The first is the ability to use AI inside of Apollo to write your emails, right? So I've already kind of created one this year, which I'm going to go through in a moment of having a I wrote the email. But the other thing they have is you can actually personalize the first line of of text with Apollo so that instead of you always trying to figure out, hey, what's this personal line that I want to use for this person, like, Hey, I saw that you just had a birthday. Congratulations. Apollo actually is working on a feature where it will just scrape the data for you. So that's going to be, I mean, game changer, whatever they actually do, release that. But in reality, I have played around this with this a little bit, and in my experience the A.I. is good, but not as good as what I'm about to give you. I have a separate YouTube video that actually goes over an email template that has generated over $10 million, and I link that inside this Google document here. And what you'll be able to do is literally just copy and paste this template over into your Apollo sequence and you can almost guarantee that it's going to be successful. I have literally got hundreds of comments and messages from people that have used this sequence and seen unbelievable success, not including our thousands of clients that have used it as well. So I think it's a really good starting point. I just want to give you it totally for free. So what you can do is click the link of the Google document and then copy everything 1 to 1 over. So this is the subject line. So I'm going to come down here and copy the subject line. We're going to go back over here and copy the subject line, and then we're going to go back here and copy the body of the original message. Right now, there's going to be a little bit of editing involved because obviously this is a template. This isn't for your specific business, but let's walk through what that would look like, right? So the subject line needs to be interesting enough to open. So, you know, one of the ones that we love to use is just a question about company name. So I'm going to erase everything except for a question about company. And then we're actually going to use a dynamic variable directly from Apollo or click on this little add dynamic variables down here and we'll click on a question about company right there. Right? And I'll usually add three dots to make it a little bit mysterious. And then here is where the other YouTube video that's linked inside of here will be more valuable because I don't want spend too much time on it about going through what the differences of these are. I would recommend that you, after you get access to this Google document, you watch that video which is linked to this Google document. So I'm going to write this out here to make it simple. So let's say, for example, that we run a marketing agency for for accountants. Let's say we run a marketing agency for accountants, and we guarantee that we'll get them 20 new clients every year. We'll just make it super easy, right? So we are we generate we a marketing company for accountants and we generate 20 new clients a year or their money back. So the first line here is typically the personalized introduction. And you have to understand that this is a text preview, meaning any time you send an email to somebody, the first like 5 to 10 words will always show before they open the email. So in order to have a high email open rate, you want to make sure that you have some kind of level of personalization inside of here. So that way they are much more likely to open it when they see that that tax preview. So I could say something like Hey, and then I'll use a dynamic variable to get the first name here. First name I wanted. To make sure you saw this. Is this true. About company name? So we'll come down here and just say company name. Question Mark Right. So that's going to, you know, if any kind if anybody is a business owner or they see like, hey, I want to see this one is make sure you saw this is a true about company name. Very good chance that someone's going to open that email. Okay. Even if, like they know that it's a sales pitch, just it's like curiosity just gets the best of them and they're going to want to open it. Okay. And then is the transformation line. So let's say something along the lines with or let's say here we help accounting firms gets 20 new clients a year or their money back. So that's the transformation. Very simple. I'm actually going to that combines both the transformation and the risk reversal. So I'm actually going to erase both of these. And then we're going to talk about social proof. So I've just made a big, bold claim. How can we back it up? Right. We've worked. With. Over or actually, let's make it simple. The less words, the better. 296 plus accounting. Firms in the past two years. And then you can say like a few names including I don't know really any big famous accounting firms. Let's call it Garfield's Accounting. And. KPMG. Right. So now I'm adding social proof to convince them, like, Hey, I'm not just coming out here. And I just made up this email to make a YouTube video to you. I actually have worked with clients previously in the past. And then, of course, we're going to want to add our call to action below that. So I might say something along the lines of based. On our initial research on. Company name. So we're going to copy this again. It seems like we may be a great fit or we may be able to be able to guarantee 20 new clients or your money Back book a call to speak with us here. And then I would put my calendar link right there. And then if I was feeling really saucy, I might say something like. P.S. If you think I wasted your time on the call, all PayPal you $100, Right? You know, which is not that bad of a deal because I have actually done this before. And in three years we had one person make me pay $4,100. And in all honesty, that was a terrible person. If I'm just and if you're watching the city, know exactly who you are. So if you think I waste your time on the call, I'll pay value $100, period. And then I put my calendar link right there. Let's just say calendar link, right. And and then you put your additional assets if you want to. So if I had, like a testimonial, I might drop that inside of there and then additional calls to action. And then the cool thing about Apollo is it will automatically add a signature. So you don't need to add your\nsignature to that. Right. So just like that, we have now written a cold email message to accounting firms. Okay, Now what I want to do here is I'm actually going to copy all of this stuff, but I'm going to save this template here. So let me click Save and now I have an automatic email. As soon as I add a lead inside of here, it is going to automatically send an email out to them. Now, what I do recommend doing as I talk about inside of here is to use the follow ups for a higher likelihood of replying. So if you come back over to this, this Google document, what you'll get in the description down below, it does a follow up 14 hours later. So we want to make sure we add a follow up here. So we'll add a step in automatic email. And what I'll do is make it literally 14 minutes after the previous step, right? Because that's I mean, 14 hours I'm sorry, 14 hours after the previous step. So we'll click on continue. And then this is very important. Okay, Make sure you click on reply to previous thread. That way it's always in the same, the same email thread and the person doesn't have to go through every single time what you do and how you help people, etc., etc.. They just remember it. Okay, because it's inside the same email thread. And then what we want to do is come back over to call the sequence. We just need to do a transformation and a call to action. So we'll come here. I'm going to paste what I did before and and then I'm going to make the transformation claim. So let me say first name. Let's see here. Adding variables. First name. Are you interested at all in 20 new clients or your money back? Then I'll just erase everything and just say, literally. Booker called to speak with us here, and if you think we're wasting your time, we'll pay back you $100. So very short, sweet to the points and much more likely to get a response that if I type this like huge, you know, 16 paragraph email to myself. Okay, so now that's our second sequence if you wanted to. I'm not going to do it for the\npurpose of this video, but you could do the third sequence of four sequence. First sequence. I do think that after three three sequences, it's kind of the point of diminishing returns. So I wouldn't focus too much on that. And then the final two things that we want to do, actually, technically final three things is first and foremost, you're going to want to consider creating an AB split test. Now, you can't do an absolute test on the free trial, but if you do get a pay trial, then I would recommend on the first email doing a split test to see which one works better and what you can do. And what I talk about inside of here is actually using a I to write the split test. So if I come back in here and let's just say I redo this email here, I want, I want the air to generate it for me, then it's going to ask for the assistance. So scaling all systems, the company name we build end to end marketing systems for companies, the pain point, our businesses that are struggling with not enough leads, calls and sales and don't know how to grow their business. And we literally money back guarantee that they will make money or that our system will work, or we give them all their money back. And that's in writing. And then the call to action is book a call to speak with us. Right. So let me generate here. All right. So as you can see here, it's given me two subject lines. Grow your business with us, transform your business scaling systems. And like I said before, I is a little like that. That seems like something that like a poor email writer would use. So you could actually refresh it right here and try to get something different. I doubt it's going to top the customization over here, and then you could choose the body if you wanted to as well. Right? And you can kind of see these aren't bad by any means, but I think they're good templates to use. And if you wanted to split test, you could use it and you can actually like or dislike it, watch or train the air to give you a better example. But I'm going to keep what I have in here for now, because in all honesty, I think that I'm a better writer than at least what this air shows right now. And then the final step, Always, always, always, before you launch a campaign like you're going to want to send a test emails, you're going to like send test email to me, and then it's going to send an email over to my email inbox. Let me pull that up really quickly. Okay. So this was in my email inbox instantaneously. Hey, example, want to make sure you saw this is is true about Google. We help accounting firms, blah, blah, blah blah and everything else looks super solid there. I think it looks great. There's no problems with it. Looks like someone actually wrote it, so we are good to go. So let me cancel. And the final thing that you need to make sure you do is you need to turn this active. Okay? So make sure you click on active on there. I talked about this and said turn the emails sequence active. If you don't, then you can send all the leads you want to over there, but it won't actually start sending. All right. So for step number three, what we're going to want to do is create our lead list. Okay, So inside of Apollo, you can see there is this little search feature right here. And you have people, companies and lists. We're going to want to start with people. That's going to be the easiest thing to do. And that's also kind of when you are on the free plan, there's going to be more features here than there are elsewhere. So we're going to want to create the list of people that we're sending the emails to in the sequence that we just created. That's why we start with the sequence first so that it's a lot easier. Okay, Now Apollo has its own email database, so you can use that to scrape your emails and it's a really, really great place to start. I will say that once you do start making money from Apollo, I would recommend investing into a higher plan so that way you can get access to more filters like, you know, revenue or some of the other things in there that you can't use unless you have a paid plan. I will say that there is kind of a hack to get around this is that Apollo has a Google Chrome extension that integrates with LinkedIn. So what you could do is you could use the Google Chrome extension on LinkedIn and LinkedIn for free. Well, you have to have Sales\nNavigator, but it will show you like the revenue count, the employee account, a lot of stuff that Apollo won't show you. And in my experience, LinkedIn is a little bit more accurate than Apollo. So kind of a hack is to go and get the Apollo Google Chrome extension and then use LinkedIn Sales Navigator, which as usual, I have amazing videos on. I mean, this video is 40 minutes. I think this video is 30 minutes on how to use LinkedIn Sales Navigator. That's actually my number one video on YouTube. And then how to use Boolean searches to find higher quality people. So that's going to be in that Google document that I talked about below. But let's just use the people feature inside of Apollo for now. So once we scroll down here, you're going to want to create a new lead list with the most qualified filters possible. Okay. So don't try to like just blast every single person in the world because what we're trying to do, especially when you're on the free plan, is try to just get a first few leads or a first few calls or first few sales. What I see a lot of he'll do is they just like create this basic email template and then they send 50,000 people to them with no kind of qualification and they wonder why it doesn't work. Right? Instead, I'd rather you create a spend some time creating a really good email template and then send a thousand people through it and then use that to split tested. And then once you get it, validate it, then we can send it to more and more people. Okay. So what we're going to want to do is come to the left hand side here and use these filters to create a list of people. Now, remember, we're serving accounting firms. Okay, So we want to come down to the the job titles right here. So LIST is obviously if you have previous list, persona would be like if you wanted to build a type of person inside of Apollo name would be literally you want to search by their name. But my recommendation would be job titles, but not by job titles. Actually, if you scroll down a lot of you'll notice there's management level. This is a lot easier to use and it will give you more of results. So I do owner, founder, C-suite and partner. So these are people that are, that are owners, founders, c-suites or partners of the company and a.k.a their decision makers. If you're not going to measure decision maker, then it doesn't matter unless you're serving people that are decision makers. But by definition if they were, you're serving those people, they are decision makers. But if you best somebody else, then if it extends the sales cycle unnecessarily. Long Okay. So the first one is job titles. The second one, as I talk about inside of year, is going to be the location, which for us is going to be United States. I only serve accounting firms, the United States in this example. So let's type in United States, right? This brings us down to 3 million total people so far. Then we're going to want to only serve people that have one accounting firms that have 1 to 10 employees. Now, why is employees important? Employees are important because larger firms like, let's say, 11 to 20 or 21 to 50 or 51 to 100, they're going to have in-house a lot of the stuff that a 1 to 10 firm wouldn't, for example, add 1 to 10 employees. Very likely the owner is still doing the marketing and the and the sales and they're doing probably everything. And at 11 to 20, there's a good chance that the owner already has a marketing team. So it's important that you decide which one of these employees, which which people you would serve based on who your ideal avatar is. Okay. And then what we'll do is come down to industry and keywords and we're going to click on industries and we click on accounting. Now, that was very easy. You might have to go through a little bit of different things here. Like, for example, if I was surveying, let's say, real estate agents, then what I might do is let me clear out this industry keyword. I'd probably clear out the number of employees, I'd even clear out the management level, and I would just come in here and say, Let's see, real. Estate agent, There we go. And let's do real estate broker real. Estate broker. Cool. So this gives me 241,000. So you're going to have to learn to kind of play around with it a little bit. And my recommendation is always to look at their LinkedIn profile. So another great thing about Apollo is that it gives you all their LinkedIn profiles. So instead of like guessing, just pull up like five or six of these different things, profile profiles. So let me just pull up one of these. So this is a real estate broker and a real estate agent right here. So that makes sense. And then over here as well, real estate agent at 21 century. So these are my quality qualified ideal avatar. So I would probably use this list if I was serving real estate agents. But let's go back now to accounting. Okay. Just to recap the list that we have right now, we're going to send an email to is there are owners, founders, C-suites or partners there in the United States. They have one or ten employees and they're in the accounting industry. Okay. And I've opened up a few of these and verified that this is exactly who I want to be sending emails to. This is the magic part right here. This is why we took the time that we did in the beginning to set the sequence, because all I'm really going to do is click on this button right here. Now, in the free plan, you'll see that I can only select 25 people because I only have the free plan. But if you had the paid plan, you can literally select every single person inside of here. But for this example, I'm going to select let's like three people, and then I'm going to come here to the sequence button and I click add to existing sequence, and then I click accounts, email marketing, and then you're seeing the emails from you and you don't want to send the emails if Apollo couldn't find their verified emails because that's how you would trash your email domain. So make sure that you, you keep that unchecked and then you'll click on confirm right here. And literally just like that, in less than 30 minutes, we have set up a very likely high converting email campaign and already started sending our first people there. And if we wanted to validate it, we can go back to sequences and you can see that there's three active people inside of here currently. And remember, it has that 30 minute delay just to make sure that we're not sending people. If I was like, Oh no, I don't want to send to these people, I could remove them from this or turn the sequence off before it would send anybody over. Make sure to click the link in the description down below to get access to this entire Google document so you can set this up by yourself."
+        }
+      }
+    ]
+  },
+  "connections": {
+    "On form submission": {
+      "main": [
+        [
+          {
+            "node": "Get video transcript",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get video transcript": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript1": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Gemini Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript": {
+      "main": [
+        [
+          {
+            "node": "Append or update row in sheet",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "a9f9b897-8f98-4918-88a3-304c28c48534",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "3142643e6548b73ffaf2cf86bd8c364310ee7e759837de1476a24ac876bdb955"
+  },
+  "id": "4AXOz07z8oNefvPQ",
+  "tags": []
+}
