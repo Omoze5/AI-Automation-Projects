@@ -1,0 +1,144 @@
+{
+  "name": "NSKAI TEAM BUILDING",
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "triggerAtHour": 20,
+              "triggerAtMinute": 1
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        -400,
+        -112
+      ],
+      "id": "5aa667dc-bc4f-4d14-9ecd-6b68e27d4810",
+      "name": "Schedule Trigger"
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "1IAyQomWtDMsSwBkkLvfwmQXW24rfjMudg_lPFczN3XE",
+          "mode": "list",
+          "cachedResultName": "Team Matchmaking Form (Responses)",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1IAyQomWtDMsSwBkkLvfwmQXW24rfjMudg_lPFczN3XE/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 127910357,
+          "mode": "list",
+          "cachedResultName": "Form Responses 1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1IAyQomWtDMsSwBkkLvfwmQXW24rfjMudg_lPFczN3XE/edit#gid=127910357"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.6,
+      "position": [
+        -176,
+        -112
+      ],
+      "id": "3dfbfd5f-35de-46f4-91c1-18eb3886867a",
+      "name": "Get row(s) in sheet",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "qqk8ofW1YmYqxH9g",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// Group team members by team number\nconst teamGroups = {};\n\nfor (const item of $input.all()) {\n  const teamNum = item.json['Team Number'];\n  const firstName = item.json['First Name'];\n  const lastName = item.json['Last Name'];\n  const email = item.json['Email'];\n  const country = item.json['Country'];\n  const availability = item.json['Availabilty']; // Note: keeping your spelling\n  const linkedin = item.json['LinkedIn URL'];\n  const discord = item.json['Discord Username'];\n  \n  if (!teamGroups[teamNum]) {\n    teamGroups[teamNum] = [];\n  }\n  \n  teamGroups[teamNum].push({\n    firstName: firstName,\n    lastName: lastName,\n    fullName: `${firstName} ${lastName}`,\n    email: email,\n    country: country,\n    availability: availability,\n    linkedin: linkedin,\n    discord: discord,\n    teamNumber: teamNum\n  });\n}\n\n// Create output for each team member with their teammates\nconst output = [];\nfor (const teamNum in teamGroups) {\n  const teammates = teamGroups[teamNum]; // This defines teammates\n  \n  // Now use teammates.forEach - this is where your code goes\n  teammates.forEach(member => {\n    const otherTeammates = teammates.filter(t => t.email !== member.email);\n    \n    // Format teammates as a simple string\n    const teammatesList = otherTeammates.map(tm => \n      `${tm.fullName} (${tm.email}) - ${tm.country} - LinkedIn: ${tm.linkedin} - Available: ${tm.availability}`\n    ).join('\\n');\n    \n    output.push({\n      json: {\n        recipientName: member.fullName,\n        recipientFirstName: member.firstName,\n        recipientLastName: member.lastName,\n        recipientEmail: member.email,\n        recipientCountry: member.country,\n        recipientAvailability: member.availability,\n        recipientLinkedIn: member.linkedin,\n        teamNumber: teamNum,\n        teammatesList: teammatesList\n      }\n    });\n  });\n}\n\nreturn output;"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        48,
+        -112
+      ],
+      "id": "2e92e64f-9812-4eba-8104-47607b5b99ec",
+      "name": "Code"
+    },
+    {
+      "parameters": {
+        "sendTo": "={{$json.recipientEmail}}",
+        "subject": "=Team Formation: {{$json.teamNumber}} Information",
+        "emailType": "text",
+        "message": "=Hi {{$json.recipientFirstName}},\n\nYour Team Number: {{$json.teamNumber}}\n\nYour Details:\n- Name: {{$json.recipientName}}\n- Country: {{$json.recipientCountry}}\n- Availability: {{$json.recipientAvailability}}\n- LinkedIn: {{$json.recipientLinkedIn}}\n\nYour Teammates:\n{{$json.teammatesList}}\n\nBest regards,\nNSKAI Management",
+        "options": {
+          "appendAttribution": false
+        }
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.1,
+      "position": [
+        272,
+        -112
+      ],
+      "id": "8dc7922a-162e-44ab-a493-c9e7d727fbf9",
+      "name": "Send a message",
+      "webhookId": "d3b40b70-cd0b-4b40-a1a8-2afe6dbc10b7",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "rM2qjodpNz7qD29T",
+          "name": "Gmail account"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Schedule Trigger": {
+      "main": [
+        [
+          {
+            "node": "Get row(s) in sheet",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get row(s) in sheet": {
+      "main": [
+        [
+          {
+            "node": "Code",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code": {
+      "main": [
+        [
+          {
+            "node": "Send a message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "50c416e9-d0ae-4cd2-a2ae-0fe9ee9f3afd",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "791031f9bdc9ca1a3b8f8b39a07cae0c8acabdabe4fd7e80afadaa39e170d76b"
+  },
+  "id": "Iy9LC0hRIvBov1Pb",
+  "tags": []
+}

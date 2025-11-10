@@ -1,0 +1,234 @@
+{
+  "name": "Linkedin Data Scraper",
+  "nodes": [
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        -200,
+        0
+      ],
+      "id": "dad83752-9eab-4234-bdaa-84a82af20322",
+      "name": "When clicking ‘Execute workflow’"
+    },
+    {
+      "parameters": {
+        "content": "## LinkedIn Founder Data Scraper & Organizer\n🔘 The workflow is triggered manually in n8n by the user when they want to scrape new data.\n\n🌐 An HTTP Request node uses Zenserp's API to search Google for LinkedIn profiles that include the title \"Founder\".\n\n🧠 A Code node extracts and cleans the data, separating the full name, position (e.g., \"Founder & CEO\"), and company name from the search results.\n\n📥 The final data is appended to a Google Sheet for organized storage, tracking, or future outreach.\n",
+        "height": 200,
+        "width": 800
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -140,
+        -260
+      ],
+      "id": "bdcfa159-eefe-43f1-ba7e-8872e2cfb64d",
+      "name": "Sticky Note"
+    },
+    {
+      "parameters": {
+        "url": "https://app.zenserp.com/api/v2/search",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "q",
+              "value": "site:linkedin.com/in intitle:\"Founder\""
+            },
+            {
+              "name": "apikey",
+              "value": "6d00ee00-5d9d-11f0-95ff-8dbd58564011"
+            },
+            {
+              "name": "num",
+              "value": "100"
+            },
+            {
+              "name": "location",
+              "value": "Nigeria"
+            },
+            {
+              "name": "hl",
+              "value": "en"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        20,
+        0
+      ],
+      "id": "1050b836-9b1b-4a7f-b0c7-37851522ba74",
+      "name": "Search Linkedin Founders"
+    },
+    {
+      "parameters": {
+        "jsCode": "const results = items[0].json.organic || [];\n\nreturn results.map(profile => {\n  const title = profile.title || \"\";\n  const parts = title.split(\" - \");\n\n  const name = parts[0]?.trim() || null;\n  const position = parts[1]?.trim() || null;\n  const company = parts[2]?.replace(/Founder\\s*/i, \"\").trim() || null;\n\n  return {\n    json: {\n      name,\n      position,\n      company,\n      link: profile.url || null,\n      destination: profile.destination || null,\n      description: profile.description || null\n    }\n  };\n});\n\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        240,
+        0
+      ],
+      "id": "60b0a8a5-fd5c-4891-976e-4f997f680322",
+      "name": "Extract Profile Info"
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "1dRhNNNnPLtKSMlKREb7lOL6QmdmZDJ1DHEHdlMoRRCE",
+          "mode": "list",
+          "cachedResultName": "List of Founders on Linkedin",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1dRhNNNnPLtKSMlKREb7lOL6QmdmZDJ1DHEHdlMoRRCE/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Sheet1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1dRhNNNnPLtKSMlKREb7lOL6QmdmZDJ1DHEHdlMoRRCE/edit#gid=0"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "FULL NAME": "={{ $json.name }}",
+            "POSITION": "={{ $json.position }}",
+            "PROFILE URL": "={{ $json.link }}",
+            "FOLLOWERS": "={{ $json.destination }}",
+            "DESCRIPTION": "={{ $json.description }}",
+            "COMPANY": "={{ $json.company }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "FULL NAME",
+              "displayName": "FULL NAME",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "POSITION",
+              "displayName": "POSITION",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "PROFILE URL",
+              "displayName": "PROFILE URL",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "FOLLOWERS",
+              "displayName": "FOLLOWERS",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "DESCRIPTION",
+              "displayName": "DESCRIPTION",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "COMPANY",
+              "displayName": "COMPANY",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.6,
+      "position": [
+        460,
+        0
+      ],
+      "id": "55159764-4dc4-4491-bb12-a6ea445d0bfa",
+      "name": "Save to Google Sheet",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "TGHSs7ceKpGAXj4f",
+          "name": "Google Sheets account"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "When clicking ‘Execute workflow’": {
+      "main": [
+        [
+          {
+            "node": "Search Linkedin Founders",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Search Linkedin Founders": {
+      "main": [
+        [
+          {
+            "node": "Extract Profile Info",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Extract Profile Info": {
+      "main": [
+        [
+          {
+            "node": "Save to Google Sheet",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "fdb2dd16-957b-4c2a-ab49-890ba9222c6b",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "7e83013067dad4939204224b15e0b751889a2895e88388e06d5572a9215757f1"
+  },
+  "id": "T4booKwCCwXsreC3",
+  "tags": []
+}

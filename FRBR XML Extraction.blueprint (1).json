@@ -1,0 +1,2674 @@
+{
+    "name": "FRBR XML Extraction",
+    "flow": [
+        {
+            "id": 2,
+            "module": "http:ActionSendData",
+            "version": 3,
+            "parameters": {
+                "handleErrors": true,
+                "useNewZLibDeCompress": true
+            },
+            "mapper": {
+                "ca": "",
+                "qs": [],
+                "url": "https://repository.overheid.nl/sru?version=1.2&operation=searchRetrieve&query=c.product-area==\"officielepublicaties\"&maximumRecords=10&startRecord=1",
+                "data": "",
+                "gzip": true,
+                "method": "get",
+                "headers": [],
+                "timeout": "",
+                "useMtls": false,
+                "authPass": "",
+                "authUser": "",
+                "bodyType": "raw",
+                "contentType": "application/xml",
+                "serializeUrl": false,
+                "shareCookies": false,
+                "parseResponse": false,
+                "followRedirect": true,
+                "useQuerystring": false,
+                "followAllRedirects": false,
+                "rejectUnauthorized": true
+            },
+            "metadata": {
+                "designer": {
+                    "x": 0,
+                    "y": 0
+                },
+                "restore": {
+                    "expect": {
+                        "qs": {
+                            "mode": "chose"
+                        },
+                        "method": {
+                            "mode": "chose",
+                            "label": "GET"
+                        },
+                        "headers": {
+                            "mode": "chose"
+                        },
+                        "bodyType": {
+                            "label": "Raw"
+                        },
+                        "contentType": {
+                            "label": "XML (application/xml)"
+                        }
+                    }
+                },
+                "parameters": [
+                    {
+                        "name": "handleErrors",
+                        "type": "boolean",
+                        "label": "Evaluate all states as errors (except for 2xx and 3xx )",
+                        "required": true
+                    },
+                    {
+                        "name": "useNewZLibDeCompress",
+                        "type": "hidden"
+                    }
+                ],
+                "expect": [
+                    {
+                        "name": "url",
+                        "type": "url",
+                        "label": "URL",
+                        "required": true
+                    },
+                    {
+                        "name": "serializeUrl",
+                        "type": "boolean",
+                        "label": "Serialize URL",
+                        "required": true
+                    },
+                    {
+                        "name": "method",
+                        "type": "select",
+                        "label": "Method",
+                        "required": true,
+                        "validate": {
+                            "enum": [
+                                "get",
+                                "head",
+                                "post",
+                                "put",
+                                "patch",
+                                "delete",
+                                "options"
+                            ]
+                        }
+                    },
+                    {
+                        "name": "headers",
+                        "spec": [
+                            {
+                                "name": "name",
+                                "type": "text",
+                                "label": "Name",
+                                "required": true
+                            },
+                            {
+                                "name": "value",
+                                "type": "text",
+                                "label": "Value"
+                            }
+                        ],
+                        "type": "array",
+                        "label": "Headers"
+                    },
+                    {
+                        "name": "qs",
+                        "spec": [
+                            {
+                                "name": "name",
+                                "type": "text",
+                                "label": "Name",
+                                "required": true
+                            },
+                            {
+                                "name": "value",
+                                "type": "text",
+                                "label": "Value"
+                            }
+                        ],
+                        "type": "array",
+                        "label": "Query String"
+                    },
+                    {
+                        "name": "bodyType",
+                        "type": "select",
+                        "label": "Body type",
+                        "validate": {
+                            "enum": [
+                                "raw",
+                                "x_www_form_urlencoded",
+                                "multipart_form_data"
+                            ]
+                        }
+                    },
+                    {
+                        "name": "parseResponse",
+                        "type": "boolean",
+                        "label": "Parse response",
+                        "required": true
+                    },
+                    {
+                        "name": "authUser",
+                        "type": "text",
+                        "label": "User name"
+                    },
+                    {
+                        "name": "authPass",
+                        "type": "password",
+                        "label": "Password"
+                    },
+                    {
+                        "name": "timeout",
+                        "type": "uinteger",
+                        "label": "Timeout",
+                        "validate": {
+                            "max": 300,
+                            "min": 1
+                        }
+                    },
+                    {
+                        "name": "shareCookies",
+                        "type": "boolean",
+                        "label": "Share cookies with other HTTP modules",
+                        "required": true
+                    },
+                    {
+                        "name": "ca",
+                        "type": "cert",
+                        "label": "Self-signed certificate"
+                    },
+                    {
+                        "name": "rejectUnauthorized",
+                        "type": "boolean",
+                        "label": "Reject connections that are using unverified (self-signed) certificates",
+                        "required": true
+                    },
+                    {
+                        "name": "followRedirect",
+                        "type": "boolean",
+                        "label": "Follow redirect",
+                        "required": true
+                    },
+                    {
+                        "name": "useQuerystring",
+                        "type": "boolean",
+                        "label": "Disable serialization of multiple same query string keys as arrays",
+                        "required": true
+                    },
+                    {
+                        "name": "gzip",
+                        "type": "boolean",
+                        "label": "Request compressed content",
+                        "required": true
+                    },
+                    {
+                        "name": "useMtls",
+                        "type": "boolean",
+                        "label": "Use Mutual TLS",
+                        "required": true
+                    },
+                    {
+                        "name": "contentType",
+                        "type": "select",
+                        "label": "Content type",
+                        "validate": {
+                            "enum": [
+                                "text/plain",
+                                "application/json",
+                                "application/xml",
+                                "text/xml",
+                                "text/html",
+                                "custom"
+                            ]
+                        }
+                    },
+                    {
+                        "name": "data",
+                        "type": "buffer",
+                        "label": "Request content"
+                    },
+                    {
+                        "name": "followAllRedirects",
+                        "type": "boolean",
+                        "label": "Follow all redirect",
+                        "required": true
+                    }
+                ]
+            }
+        },
+        {
+            "id": 14,
+            "module": "xml:ParseXML",
+            "version": 1,
+            "parameters": {
+                "type": 418711,
+                "preserveNumbersAsText": false
+            },
+            "mapper": {
+                "xml": "{{2.data}}"
+            },
+            "metadata": {
+                "designer": {
+                    "x": 300,
+                    "y": 0
+                },
+                "restore": {
+                    "parameters": {
+                        "type": {
+                            "label": "New data input"
+                        }
+                    }
+                },
+                "parameters": [
+                    {
+                        "name": "type",
+                        "type": "udt",
+                        "label": "Data structure"
+                    },
+                    {
+                        "name": "preserveNumbersAsText",
+                        "type": "boolean",
+                        "label": "Preserve numbers as text",
+                        "required": true
+                    }
+                ],
+                "expect": [
+                    {
+                        "name": "xml",
+                        "type": "text",
+                        "label": "XML",
+                        "required": true
+                    }
+                ],
+                "interface": [
+                    {
+                        "help": "",
+                        "name": "sru:searchRetrieveResponse",
+                        "spec": [
+                            {
+                                "help": "",
+                                "name": "_attributes",
+                                "spec": [
+                                    {
+                                        "help": "",
+                                        "name": "xmlns:overheidwetgeving",
+                                        "type": "text",
+                                        "label": "Xmlns:overheidwetgeving",
+                                        "default": "http://standaarden.overheid.nl/wetgeving/",
+                                        "required": false,
+                                        "multiline": false
+                                    },
+                                    {
+                                        "help": "",
+                                        "name": "xmlns:dcterms",
+                                        "type": "text",
+                                        "label": "Xmlns:dcterms",
+                                        "default": "http://purl.org/dc/terms/",
+                                        "required": false,
+                                        "multiline": false
+                                    },
+                                    {
+                                        "help": "",
+                                        "name": "xmlns:cd",
+                                        "type": "text",
+                                        "label": "Xmlns:cd",
+                                        "default": "http://standaarden.overheid.nl/cup/data",
+                                        "required": false,
+                                        "multiline": false
+                                    },
+                                    {
+                                        "help": "",
+                                        "name": "xmlns:sru",
+                                        "type": "text",
+                                        "label": "Xmlns:sru",
+                                        "default": "http://docs.oasis-open.org/ns/search-ws/sruResponse",
+                                        "required": false,
+                                        "multiline": false
+                                    },
+                                    {
+                                        "help": "",
+                                        "name": "xmlns:gzd",
+                                        "type": "text",
+                                        "label": "Xmlns:gzd",
+                                        "default": "http://standaarden.overheid.nl/sru",
+                                        "required": false,
+                                        "multiline": false
+                                    },
+                                    {
+                                        "help": "",
+                                        "name": "xmlns:diag",
+                                        "type": "text",
+                                        "label": "Xmlns:diag",
+                                        "default": "http://docs.oasis-open.org/ns/search-ws/diagnostic",
+                                        "required": false,
+                                        "multiline": false
+                                    },
+                                    {
+                                        "help": "",
+                                        "name": "xmlns:facet",
+                                        "type": "text",
+                                        "label": "Xmlns:facet",
+                                        "default": "http://docs.oasis-open.org/ns/search-ws/facetedResults",
+                                        "required": false,
+                                        "multiline": false
+                                    },
+                                    {
+                                        "help": "",
+                                        "name": "xmlns:c",
+                                        "type": "text",
+                                        "label": "Xmlns:c",
+                                        "default": "http://standaarden.overheid.nl/collectie/",
+                                        "required": false,
+                                        "multiline": false
+                                    }
+                                ],
+                                "type": "collection",
+                                "label": " attributes",
+                                "required": false,
+                                "sequence": true
+                            },
+                            {
+                                "help": "",
+                                "name": "sru:version",
+                                "spec": {
+                                    "type": "text",
+                                    "default": null,
+                                    "required": false,
+                                    "multiline": false
+                                },
+                                "type": "array",
+                                "label": "Sru:version",
+                                "required": false
+                            },
+                            {
+                                "help": "",
+                                "name": "sru:numberOfRecords",
+                                "spec": {
+                                    "type": "text",
+                                    "default": null,
+                                    "required": false,
+                                    "multiline": false
+                                },
+                                "type": "array",
+                                "label": "Sru:number of records",
+                                "required": false
+                            },
+                            {
+                                "help": "",
+                                "name": "sru:records",
+                                "spec": {
+                                    "spec": [
+                                        {
+                                            "help": "",
+                                            "name": "sru:record",
+                                            "spec": {
+                                                "spec": [
+                                                    {
+                                                        "help": "",
+                                                        "name": "sru:recordSchema",
+                                                        "spec": {
+                                                            "type": "text",
+                                                            "default": null,
+                                                            "required": false,
+                                                            "multiline": false
+                                                        },
+                                                        "type": "array",
+                                                        "label": null,
+                                                        "required": false
+                                                    },
+                                                    {
+                                                        "help": "",
+                                                        "name": "sru:recordPacking",
+                                                        "spec": {
+                                                            "type": "text",
+                                                            "default": null,
+                                                            "required": false,
+                                                            "multiline": false
+                                                        },
+                                                        "type": "array",
+                                                        "label": null,
+                                                        "required": false
+                                                    },
+                                                    {
+                                                        "help": "",
+                                                        "name": "sru:recordData",
+                                                        "spec": {
+                                                            "spec": [
+                                                                {
+                                                                    "help": "",
+                                                                    "name": "gzd:gzd",
+                                                                    "spec": {
+                                                                        "spec": [
+                                                                            {
+                                                                                "help": "",
+                                                                                "name": "gzd:originalData",
+                                                                                "spec": {
+                                                                                    "spec": [
+                                                                                        {
+                                                                                            "help": "",
+                                                                                            "name": "overheidwetgeving:meta",
+                                                                                            "spec": {
+                                                                                                "spec": [
+                                                                                                    {
+                                                                                                        "help": "",
+                                                                                                        "name": "_attributes",
+                                                                                                        "spec": [
+                                                                                                            {
+                                                                                                                "help": "",
+                                                                                                                "name": "xmlns:search",
+                                                                                                                "type": "text",
+                                                                                                                "label": null,
+                                                                                                                "default": "http://marklogic.com/appservices/search",
+                                                                                                                "required": false,
+                                                                                                                "multiline": false
+                                                                                                            }
+                                                                                                        ],
+                                                                                                        "type": "collection",
+                                                                                                        "label": null,
+                                                                                                        "required": false,
+                                                                                                        "sequence": true
+                                                                                                    },
+                                                                                                    {
+                                                                                                        "help": "",
+                                                                                                        "name": "overheidwetgeving:owmskern",
+                                                                                                        "spec": {
+                                                                                                            "spec": [
+                                                                                                                {
+                                                                                                                    "help": "",
+                                                                                                                    "name": "dcterms:identifier",
+                                                                                                                    "spec": {
+                                                                                                                        "type": "text",
+                                                                                                                        "default": null,
+                                                                                                                        "required": false,
+                                                                                                                        "multiline": false
+                                                                                                                    },
+                                                                                                                    "type": "array",
+                                                                                                                    "label": null,
+                                                                                                                    "required": false
+                                                                                                                },
+                                                                                                                {
+                                                                                                                    "help": "",
+                                                                                                                    "name": "dcterms:title",
+                                                                                                                    "spec": {
+                                                                                                                        "type": "text",
+                                                                                                                        "default": null,
+                                                                                                                        "required": false,
+                                                                                                                        "multiline": false
+                                                                                                                    },
+                                                                                                                    "type": "array",
+                                                                                                                    "label": null,
+                                                                                                                    "required": false
+                                                                                                                },
+                                                                                                                {
+                                                                                                                    "help": "",
+                                                                                                                    "name": "dcterms:language",
+                                                                                                                    "spec": {
+                                                                                                                        "type": "text",
+                                                                                                                        "default": null,
+                                                                                                                        "required": false,
+                                                                                                                        "multiline": false
+                                                                                                                    },
+                                                                                                                    "type": "array",
+                                                                                                                    "label": null,
+                                                                                                                    "required": false
+                                                                                                                },
+                                                                                                                {
+                                                                                                                    "help": "",
+                                                                                                                    "name": "dcterms:type",
+                                                                                                                    "spec": {
+                                                                                                                        "spec": [
+                                                                                                                            {
+                                                                                                                                "help": "",
+                                                                                                                                "name": "_value",
+                                                                                                                                "type": "text",
+                                                                                                                                "label": null,
+                                                                                                                                "default": null,
+                                                                                                                                "required": false,
+                                                                                                                                "multiline": false
+                                                                                                                            },
+                                                                                                                            {
+                                                                                                                                "help": "",
+                                                                                                                                "name": "_attributes",
+                                                                                                                                "spec": [
+                                                                                                                                    {
+                                                                                                                                        "help": "",
+                                                                                                                                        "name": "scheme",
+                                                                                                                                        "type": "text",
+                                                                                                                                        "label": null,
+                                                                                                                                        "default": null,
+                                                                                                                                        "required": false,
+                                                                                                                                        "multiline": false
+                                                                                                                                    }
+                                                                                                                                ],
+                                                                                                                                "type": "collection",
+                                                                                                                                "label": null,
+                                                                                                                                "required": false,
+                                                                                                                                "sequence": true
+                                                                                                                            }
+                                                                                                                        ],
+                                                                                                                        "type": "collection",
+                                                                                                                        "required": false,
+                                                                                                                        "sequence": true
+                                                                                                                    },
+                                                                                                                    "type": "array",
+                                                                                                                    "label": null,
+                                                                                                                    "required": false
+                                                                                                                },
+                                                                                                                {
+                                                                                                                    "help": "",
+                                                                                                                    "name": "dcterms:creator",
+                                                                                                                    "spec": {
+                                                                                                                        "spec": [
+                                                                                                                            {
+                                                                                                                                "help": "",
+                                                                                                                                "name": "_value",
+                                                                                                                                "type": "text",
+                                                                                                                                "label": null,
+                                                                                                                                "default": null,
+                                                                                                                                "required": false,
+                                                                                                                                "multiline": false
+                                                                                                                            },
+                                                                                                                            {
+                                                                                                                                "help": "",
+                                                                                                                                "name": "_attributes",
+                                                                                                                                "spec": [
+                                                                                                                                    {
+                                                                                                                                        "help": "",
+                                                                                                                                        "name": "scheme",
+                                                                                                                                        "type": "text",
+                                                                                                                                        "label": null,
+                                                                                                                                        "default": null,
+                                                                                                                                        "required": false,
+                                                                                                                                        "multiline": false
+                                                                                                                                    }
+                                                                                                                                ],
+                                                                                                                                "type": "collection",
+                                                                                                                                "label": null,
+                                                                                                                                "required": false,
+                                                                                                                                "sequence": true
+                                                                                                                            }
+                                                                                                                        ],
+                                                                                                                        "type": "collection",
+                                                                                                                        "required": false,
+                                                                                                                        "sequence": true
+                                                                                                                    },
+                                                                                                                    "type": "array",
+                                                                                                                    "label": null,
+                                                                                                                    "required": false
+                                                                                                                },
+                                                                                                                {
+                                                                                                                    "help": "",
+                                                                                                                    "name": "dcterms:modified",
+                                                                                                                    "spec": {
+                                                                                                                        "type": "text",
+                                                                                                                        "default": null,
+                                                                                                                        "required": false,
+                                                                                                                        "multiline": false
+                                                                                                                    },
+                                                                                                                    "type": "array",
+                                                                                                                    "label": null,
+                                                                                                                    "required": false
+                                                                                                                },
+                                                                                                                {
+                                                                                                                    "help": "",
+                                                                                                                    "name": "overheid:authority",
+                                                                                                                    "spec": {
+                                                                                                                        "spec": [
+                                                                                                                            {
+                                                                                                                                "help": "",
+                                                                                                                                "name": "_value",
+                                                                                                                                "type": "text",
+                                                                                                                                "label": null,
+                                                                                                                                "default": null,
+                                                                                                                                "required": false,
+                                                                                                                                "multiline": false
+                                                                                                                            },
+                                                                                                                            {
+                                                                                                                                "help": "",
+                                                                                                                                "name": "_attributes",
+                                                                                                                                "spec": [
+                                                                                                                                    {
+                                                                                                                                        "help": "",
+                                                                                                                                        "name": "scheme",
+                                                                                                                                        "type": "text",
+                                                                                                                                        "label": null,
+                                                                                                                                        "default": null,
+                                                                                                                                        "required": false,
+                                                                                                                                        "multiline": false
+                                                                                                                                    },
+                                                                                                                                    {
+                                                                                                                                        "help": "",
+                                                                                                                                        "name": "xmlns:overheid",
+                                                                                                                                        "type": "text",
+                                                                                                                                        "label": null,
+                                                                                                                                        "default": "http://standaarden.overheid.nl/owms/terms/",
+                                                                                                                                        "required": false,
+                                                                                                                                        "multiline": false
+                                                                                                                                    }
+                                                                                                                                ],
+                                                                                                                                "type": "collection",
+                                                                                                                                "label": null,
+                                                                                                                                "required": false,
+                                                                                                                                "sequence": true
+                                                                                                                            }
+                                                                                                                        ],
+                                                                                                                        "type": "collection",
+                                                                                                                        "required": false,
+                                                                                                                        "sequence": true
+                                                                                                                    },
+                                                                                                                    "type": "array",
+                                                                                                                    "label": null,
+                                                                                                                    "required": false
+                                                                                                                }
+                                                                                                            ],
+                                                                                                            "type": "collection",
+                                                                                                            "required": false,
+                                                                                                            "sequence": true
+                                                                                                        },
+                                                                                                        "type": "array",
+                                                                                                        "label": null,
+                                                                                                        "required": false
+                                                                                                    },
+                                                                                                    {
+                                                                                                        "help": "",
+                                                                                                        "name": "overheidwetgeving:owmsmantel",
+                                                                                                        "spec": {
+                                                                                                            "spec": [
+                                                                                                                {
+                                                                                                                    "help": "",
+                                                                                                                    "name": "dcterms:available",
+                                                                                                                    "spec": {
+                                                                                                                        "type": "text",
+                                                                                                                        "default": null,
+                                                                                                                        "required": false,
+                                                                                                                        "multiline": false
+                                                                                                                    },
+                                                                                                                    "type": "array",
+                                                                                                                    "label": null,
+                                                                                                                    "required": false
+                                                                                                                },
+                                                                                                                {
+                                                                                                                    "help": "",
+                                                                                                                    "name": "dcterms:date",
+                                                                                                                    "spec": {
+                                                                                                                        "type": "text",
+                                                                                                                        "default": null,
+                                                                                                                        "required": false,
+                                                                                                                        "multiline": false
+                                                                                                                    },
+                                                                                                                    "type": "array",
+                                                                                                                    "label": null,
+                                                                                                                    "required": false
+                                                                                                                },
+                                                                                                                {
+                                                                                                                    "help": "",
+                                                                                                                    "name": "dcterms:hasVersion",
+                                                                                                                    "spec": {
+                                                                                                                        "spec": [
+                                                                                                                            {
+                                                                                                                                "help": "",
+                                                                                                                                "name": "_value",
+                                                                                                                                "type": "text",
+                                                                                                                                "label": null,
+                                                                                                                                "default": null,
+                                                                                                                                "required": false,
+                                                                                                                                "multiline": false
+                                                                                                                            },
+                                                                                                                            {
+                                                                                                                                "help": "",
+                                                                                                                                "name": "_attributes",
+                                                                                                                                "spec": [
+                                                                                                                                    {
+                                                                                                                                        "help": "",
+                                                                                                                                        "name": "resourceIdentifier",
+                                                                                                                                        "type": "text",
+                                                                                                                                        "label": null,
+                                                                                                                                        "default": null,
+                                                                                                                                        "required": false,
+                                                                                                                                        "multiline": false
+                                                                                                                                    }
+                                                                                                                                ],
+                                                                                                                                "type": "collection",
+                                                                                                                                "label": null,
+                                                                                                                                "required": false,
+                                                                                                                                "sequence": true
+                                                                                                                            }
+                                                                                                                        ],
+                                                                                                                        "type": "collection",
+                                                                                                                        "required": false,
+                                                                                                                        "sequence": true
+                                                                                                                    },
+                                                                                                                    "type": "array",
+                                                                                                                    "label": null,
+                                                                                                                    "required": false
+                                                                                                                },
+                                                                                                                {
+                                                                                                                    "help": "",
+                                                                                                                    "name": "dcterms:subject",
+                                                                                                                    "spec": {
+                                                                                                                        "spec": [
+                                                                                                                            {
+                                                                                                                                "help": "",
+                                                                                                                                "name": "_value",
+                                                                                                                                "type": "text",
+                                                                                                                                "label": null,
+                                                                                                                                "default": null,
+                                                                                                                                "required": false,
+                                                                                                                                "multiline": false
+                                                                                                                            },
+                                                                                                                            {
+                                                                                                                                "help": "",
+                                                                                                                                "name": "_attributes",
+                                                                                                                                "spec": [
+                                                                                                                                    {
+                                                                                                                                        "help": "",
+                                                                                                                                        "name": "scheme",
+                                                                                                                                        "type": "text",
+                                                                                                                                        "label": null,
+                                                                                                                                        "default": null,
+                                                                                                                                        "required": false,
+                                                                                                                                        "multiline": false
+                                                                                                                                    }
+                                                                                                                                ],
+                                                                                                                                "type": "collection",
+                                                                                                                                "label": null,
+                                                                                                                                "required": false,
+                                                                                                                                "sequence": true
+                                                                                                                            }
+                                                                                                                        ],
+                                                                                                                        "type": "collection",
+                                                                                                                        "required": false,
+                                                                                                                        "sequence": true
+                                                                                                                    },
+                                                                                                                    "type": "array",
+                                                                                                                    "label": null,
+                                                                                                                    "required": false
+                                                                                                                },
+                                                                                                                {
+                                                                                                                    "help": "",
+                                                                                                                    "name": "dcterms:abstract",
+                                                                                                                    "spec": {
+                                                                                                                        "type": "text",
+                                                                                                                        "default": null,
+                                                                                                                        "required": false,
+                                                                                                                        "multiline": false
+                                                                                                                    },
+                                                                                                                    "type": "array",
+                                                                                                                    "label": null,
+                                                                                                                    "required": false
+                                                                                                                },
+                                                                                                                {
+                                                                                                                    "help": "",
+                                                                                                                    "name": "dcterms:publisher",
+                                                                                                                    "spec": {
+                                                                                                                        "spec": [
+                                                                                                                            {
+                                                                                                                                "help": "",
+                                                                                                                                "name": "_value",
+                                                                                                                                "type": "text",
+                                                                                                                                "label": null,
+                                                                                                                                "default": null,
+                                                                                                                                "required": false,
+                                                                                                                                "multiline": false
+                                                                                                                            },
+                                                                                                                            {
+                                                                                                                                "help": "",
+                                                                                                                                "name": "_attributes",
+                                                                                                                                "spec": [
+                                                                                                                                    {
+                                                                                                                                        "help": "",
+                                                                                                                                        "name": "scheme",
+                                                                                                                                        "type": "text",
+                                                                                                                                        "label": null,
+                                                                                                                                        "default": null,
+                                                                                                                                        "required": false,
+                                                                                                                                        "multiline": false
+                                                                                                                                    }
+                                                                                                                                ],
+                                                                                                                                "type": "collection",
+                                                                                                                                "label": null,
+                                                                                                                                "required": false,
+                                                                                                                                "sequence": true
+                                                                                                                            }
+                                                                                                                        ],
+                                                                                                                        "type": "collection",
+                                                                                                                        "required": false,
+                                                                                                                        "sequence": true
+                                                                                                                    },
+                                                                                                                    "type": "array",
+                                                                                                                    "label": null,
+                                                                                                                    "required": false
+                                                                                                                }
+                                                                                                            ],
+                                                                                                            "type": "collection",
+                                                                                                            "required": false,
+                                                                                                            "sequence": true
+                                                                                                        },
+                                                                                                        "type": "array",
+                                                                                                        "label": null,
+                                                                                                        "required": false
+                                                                                                    },
+                                                                                                    {
+                                                                                                        "help": "",
+                                                                                                        "name": "overheidwetgeving:tpmeta",
+                                                                                                        "spec": {
+                                                                                                            "spec": [
+                                                                                                                {
+                                                                                                                    "help": "",
+                                                                                                                    "name": "c:product-area",
+                                                                                                                    "spec": {
+                                                                                                                        "type": "text",
+                                                                                                                        "default": null,
+                                                                                                                        "required": false,
+                                                                                                                        "multiline": false
+                                                                                                                    },
+                                                                                                                    "type": "array",
+                                                                                                                    "label": null,
+                                                                                                                    "required": false
+                                                                                                                },
+                                                                                                                {
+                                                                                                                    "help": "",
+                                                                                                                    "name": "c:content-area",
+                                                                                                                    "spec": {
+                                                                                                                        "type": "text",
+                                                                                                                        "default": null,
+                                                                                                                        "required": false,
+                                                                                                                        "multiline": false
+                                                                                                                    },
+                                                                                                                    "type": "array",
+                                                                                                                    "label": null,
+                                                                                                                    "required": false
+                                                                                                                },
+                                                                                                                {
+                                                                                                                    "help": "",
+                                                                                                                    "name": "overheidwetgeving:jaargang",
+                                                                                                                    "spec": {
+                                                                                                                        "type": "text",
+                                                                                                                        "default": null,
+                                                                                                                        "required": false,
+                                                                                                                        "multiline": false
+                                                                                                                    },
+                                                                                                                    "type": "array",
+                                                                                                                    "label": null,
+                                                                                                                    "required": false
+                                                                                                                },
+                                                                                                                {
+                                                                                                                    "help": "",
+                                                                                                                    "name": "overheidwetgeving:organisatietype",
+                                                                                                                    "spec": {
+                                                                                                                        "spec": [
+                                                                                                                            {
+                                                                                                                                "help": "",
+                                                                                                                                "name": "_value",
+                                                                                                                                "type": "text",
+                                                                                                                                "label": null,
+                                                                                                                                "default": null,
+                                                                                                                                "required": false,
+                                                                                                                                "multiline": false
+                                                                                                                            },
+                                                                                                                            {
+                                                                                                                                "help": "",
+                                                                                                                                "name": "_attributes",
+                                                                                                                                "spec": [
+                                                                                                                                    {
+                                                                                                                                        "help": "",
+                                                                                                                                        "name": "scheme",
+                                                                                                                                        "type": "text",
+                                                                                                                                        "label": null,
+                                                                                                                                        "default": null,
+                                                                                                                                        "required": false,
+                                                                                                                                        "multiline": false
+                                                                                                                                    }
+                                                                                                                                ],
+                                                                                                                                "type": "collection",
+                                                                                                                                "label": null,
+                                                                                                                                "required": false,
+                                                                                                                                "sequence": true
+                                                                                                                            }
+                                                                                                                        ],
+                                                                                                                        "type": "collection",
+                                                                                                                        "required": false,
+                                                                                                                        "sequence": true
+                                                                                                                    },
+                                                                                                                    "type": "array",
+                                                                                                                    "label": null,
+                                                                                                                    "required": false
+                                                                                                                },
+                                                                                                                {
+                                                                                                                    "help": "",
+                                                                                                                    "name": "overheidwetgeving:publicatienummer",
+                                                                                                                    "spec": {
+                                                                                                                        "type": "text",
+                                                                                                                        "default": null,
+                                                                                                                        "required": false,
+                                                                                                                        "multiline": false
+                                                                                                                    },
+                                                                                                                    "type": "array",
+                                                                                                                    "label": null,
+                                                                                                                    "required": false
+                                                                                                                },
+                                                                                                                {
+                                                                                                                    "help": "",
+                                                                                                                    "name": "overheidwetgeving:publicatienaam",
+                                                                                                                    "spec": {
+                                                                                                                        "type": "text",
+                                                                                                                        "default": null,
+                                                                                                                        "required": false,
+                                                                                                                        "multiline": false
+                                                                                                                    },
+                                                                                                                    "type": "array",
+                                                                                                                    "label": null,
+                                                                                                                    "required": false
+                                                                                                                },
+                                                                                                                {
+                                                                                                                    "help": "",
+                                                                                                                    "name": "overheidwetgeving:gebiedsmarkering",
+                                                                                                                    "spec": {
+                                                                                                                        "spec": [
+                                                                                                                            {
+                                                                                                                                "help": "",
+                                                                                                                                "name": "_attributes",
+                                                                                                                                "spec": [
+                                                                                                                                    {
+                                                                                                                                        "help": "",
+                                                                                                                                        "name": "scheme",
+                                                                                                                                        "type": "text",
+                                                                                                                                        "label": null,
+                                                                                                                                        "default": null,
+                                                                                                                                        "required": false,
+                                                                                                                                        "multiline": false
+                                                                                                                                    }
+                                                                                                                                ],
+                                                                                                                                "type": "collection",
+                                                                                                                                "label": null,
+                                                                                                                                "required": false,
+                                                                                                                                "sequence": true
+                                                                                                                            },
+                                                                                                                            {
+                                                                                                                                "help": "",
+                                                                                                                                "name": "overheidwetgeving:Punt",
+                                                                                                                                "spec": {
+                                                                                                                                    "spec": [
+                                                                                                                                        {
+                                                                                                                                            "help": "",
+                                                                                                                                            "name": "overheidwetgeving:geometrie",
+                                                                                                                                            "spec": {
+                                                                                                                                                "type": "text",
+                                                                                                                                                "default": null,
+                                                                                                                                                "required": false,
+                                                                                                                                                "multiline": false
+                                                                                                                                            },
+                                                                                                                                            "type": "array",
+                                                                                                                                            "label": null,
+                                                                                                                                            "required": false
+                                                                                                                                        },
+                                                                                                                                        {
+                                                                                                                                            "help": "",
+                                                                                                                                            "name": "overheidwetgeving:locatiepunt",
+                                                                                                                                            "spec": {
+                                                                                                                                                "type": "text",
+                                                                                                                                                "default": null,
+                                                                                                                                                "required": false,
+                                                                                                                                                "multiline": false
+                                                                                                                                            },
+                                                                                                                                            "type": "array",
+                                                                                                                                            "label": null,
+                                                                                                                                            "required": false
+                                                                                                                                        },
+                                                                                                                                        {
+                                                                                                                                            "help": "",
+                                                                                                                                            "name": "overheidwetgeving:locatiegebied",
+                                                                                                                                            "spec": {
+                                                                                                                                                "type": "text",
+                                                                                                                                                "default": null,
+                                                                                                                                                "required": false,
+                                                                                                                                                "multiline": false
+                                                                                                                                            },
+                                                                                                                                            "type": "array",
+                                                                                                                                            "label": null,
+                                                                                                                                            "required": false
+                                                                                                                                        },
+                                                                                                                                        {
+                                                                                                                                            "help": "",
+                                                                                                                                            "name": "overheidwetgeving:geometrielabel",
+                                                                                                                                            "spec": {
+                                                                                                                                                "type": "text",
+                                                                                                                                                "default": null,
+                                                                                                                                                "required": false,
+                                                                                                                                                "multiline": false
+                                                                                                                                            },
+                                                                                                                                            "type": "array",
+                                                                                                                                            "label": null,
+                                                                                                                                            "required": false
+                                                                                                                                        }
+                                                                                                                                    ],
+                                                                                                                                    "type": "collection",
+                                                                                                                                    "required": false,
+                                                                                                                                    "sequence": true
+                                                                                                                                },
+                                                                                                                                "type": "array",
+                                                                                                                                "label": null,
+                                                                                                                                "required": false
+                                                                                                                            }
+                                                                                                                        ],
+                                                                                                                        "type": "collection",
+                                                                                                                        "required": false,
+                                                                                                                        "sequence": true
+                                                                                                                    },
+                                                                                                                    "type": "array",
+                                                                                                                    "label": null,
+                                                                                                                    "required": false
+                                                                                                                },
+                                                                                                                {
+                                                                                                                    "help": "",
+                                                                                                                    "name": "cd:datumTijdstipWijzigingWork",
+                                                                                                                    "spec": {
+                                                                                                                        "type": "text",
+                                                                                                                        "default": null,
+                                                                                                                        "required": false,
+                                                                                                                        "multiline": false
+                                                                                                                    },
+                                                                                                                    "type": "array",
+                                                                                                                    "label": null,
+                                                                                                                    "required": false
+                                                                                                                },
+                                                                                                                {
+                                                                                                                    "help": "",
+                                                                                                                    "name": "cd:datumTijdstipWijzigingExpression",
+                                                                                                                    "spec": {
+                                                                                                                        "type": "text",
+                                                                                                                        "default": null,
+                                                                                                                        "required": false,
+                                                                                                                        "multiline": false
+                                                                                                                    },
+                                                                                                                    "type": "array",
+                                                                                                                    "label": null,
+                                                                                                                    "required": false
+                                                                                                                }
+                                                                                                            ],
+                                                                                                            "type": "collection",
+                                                                                                            "required": false,
+                                                                                                            "sequence": true
+                                                                                                        },
+                                                                                                        "type": "array",
+                                                                                                        "label": null,
+                                                                                                        "required": false
+                                                                                                    }
+                                                                                                ],
+                                                                                                "type": "collection",
+                                                                                                "required": false,
+                                                                                                "sequence": true
+                                                                                            },
+                                                                                            "type": "array",
+                                                                                            "label": null,
+                                                                                            "required": false
+                                                                                        }
+                                                                                    ],
+                                                                                    "type": "collection",
+                                                                                    "required": false,
+                                                                                    "sequence": true
+                                                                                },
+                                                                                "type": "array",
+                                                                                "label": null,
+                                                                                "required": false
+                                                                            },
+                                                                            {
+                                                                                "help": "",
+                                                                                "name": "gzd:enrichedData",
+                                                                                "spec": {
+                                                                                    "spec": [
+                                                                                        {
+                                                                                            "help": "",
+                                                                                            "name": "gzd:url",
+                                                                                            "spec": {
+                                                                                                "type": "text",
+                                                                                                "default": null,
+                                                                                                "required": false,
+                                                                                                "multiline": false
+                                                                                            },
+                                                                                            "type": "array",
+                                                                                            "label": null,
+                                                                                            "required": false
+                                                                                        },
+                                                                                        {
+                                                                                            "help": "",
+                                                                                            "name": "gzd:preferredUrl",
+                                                                                            "spec": {
+                                                                                                "type": "text",
+                                                                                                "default": null,
+                                                                                                "required": false,
+                                                                                                "multiline": false
+                                                                                            },
+                                                                                            "type": "array",
+                                                                                            "label": null,
+                                                                                            "required": false
+                                                                                        },
+                                                                                        {
+                                                                                            "help": "",
+                                                                                            "name": "gzd:itemUrl",
+                                                                                            "spec": {
+                                                                                                "spec": [
+                                                                                                    {
+                                                                                                        "help": "",
+                                                                                                        "name": "_value",
+                                                                                                        "type": "text",
+                                                                                                        "label": null,
+                                                                                                        "default": null,
+                                                                                                        "required": false,
+                                                                                                        "multiline": false
+                                                                                                    },
+                                                                                                    {
+                                                                                                        "help": "",
+                                                                                                        "name": "_attributes",
+                                                                                                        "spec": [
+                                                                                                            {
+                                                                                                                "help": "",
+                                                                                                                "name": "manifestation",
+                                                                                                                "type": "text",
+                                                                                                                "label": null,
+                                                                                                                "default": null,
+                                                                                                                "required": false,
+                                                                                                                "multiline": false
+                                                                                                            }
+                                                                                                        ],
+                                                                                                        "type": "collection",
+                                                                                                        "label": null,
+                                                                                                        "required": false,
+                                                                                                        "sequence": true
+                                                                                                    }
+                                                                                                ],
+                                                                                                "type": "collection",
+                                                                                                "required": false,
+                                                                                                "sequence": true
+                                                                                            },
+                                                                                            "type": "array",
+                                                                                            "label": null,
+                                                                                            "required": false
+                                                                                        },
+                                                                                        {
+                                                                                            "help": "",
+                                                                                            "name": "gzd:timestamp",
+                                                                                            "spec": {
+                                                                                                "type": "text",
+                                                                                                "default": null,
+                                                                                                "required": false,
+                                                                                                "multiline": false
+                                                                                            },
+                                                                                            "type": "array",
+                                                                                            "label": null,
+                                                                                            "required": false
+                                                                                        }
+                                                                                    ],
+                                                                                    "type": "collection",
+                                                                                    "required": false,
+                                                                                    "sequence": true
+                                                                                },
+                                                                                "type": "array",
+                                                                                "label": null,
+                                                                                "required": false
+                                                                            }
+                                                                        ],
+                                                                        "type": "collection",
+                                                                        "required": false,
+                                                                        "sequence": true
+                                                                    },
+                                                                    "type": "array",
+                                                                    "label": null,
+                                                                    "required": false
+                                                                }
+                                                            ],
+                                                            "type": "collection",
+                                                            "required": false,
+                                                            "sequence": true
+                                                        },
+                                                        "type": "array",
+                                                        "label": null,
+                                                        "required": false
+                                                    },
+                                                    {
+                                                        "help": "",
+                                                        "name": "sru:recordPosition",
+                                                        "spec": {
+                                                            "type": "text",
+                                                            "default": null,
+                                                            "required": false,
+                                                            "multiline": false
+                                                        },
+                                                        "type": "array",
+                                                        "label": null,
+                                                        "required": false
+                                                    }
+                                                ],
+                                                "type": "collection",
+                                                "required": false,
+                                                "sequence": true
+                                            },
+                                            "type": "array",
+                                            "label": null,
+                                            "required": false
+                                        }
+                                    ],
+                                    "type": "collection",
+                                    "required": false,
+                                    "sequence": true
+                                },
+                                "type": "array",
+                                "label": "Sru:records",
+                                "required": false
+                            },
+                            {
+                                "help": "",
+                                "name": "sru:nextRecordPosition",
+                                "spec": {
+                                    "type": "text",
+                                    "default": null,
+                                    "required": false,
+                                    "multiline": false
+                                },
+                                "type": "array",
+                                "label": "Sru:next record position",
+                                "required": false
+                            },
+                            {
+                                "help": "",
+                                "name": "sru:echoedSearchRetrieveRequest",
+                                "spec": {
+                                    "spec": [
+                                        {
+                                            "help": "",
+                                            "name": "sru:query",
+                                            "spec": {
+                                                "type": "text",
+                                                "default": null,
+                                                "required": false,
+                                                "multiline": false
+                                            },
+                                            "type": "array",
+                                            "label": null,
+                                            "required": false
+                                        },
+                                        {
+                                            "help": "",
+                                            "name": "sru:startRecord",
+                                            "spec": {
+                                                "type": "text",
+                                                "default": null,
+                                                "required": false,
+                                                "multiline": false
+                                            },
+                                            "type": "array",
+                                            "label": null,
+                                            "required": false
+                                        },
+                                        {
+                                            "help": "",
+                                            "name": "sru:maximumRecords",
+                                            "spec": {
+                                                "type": "text",
+                                                "default": null,
+                                                "required": false,
+                                                "multiline": false
+                                            },
+                                            "type": "array",
+                                            "label": null,
+                                            "required": false
+                                        },
+                                        {
+                                            "help": "",
+                                            "name": "sru:recordXMLEscaping",
+                                            "spec": {
+                                                "type": "text",
+                                                "default": null,
+                                                "required": false,
+                                                "multiline": false
+                                            },
+                                            "type": "array",
+                                            "label": null,
+                                            "required": false
+                                        },
+                                        {
+                                            "help": "",
+                                            "name": "sru:recordSchema",
+                                            "spec": {
+                                                "type": "text",
+                                                "default": null,
+                                                "required": false,
+                                                "multiline": false
+                                            },
+                                            "type": "array",
+                                            "label": null,
+                                            "required": false
+                                        }
+                                    ],
+                                    "type": "collection",
+                                    "required": false,
+                                    "sequence": true
+                                },
+                                "type": "array",
+                                "label": "Sru:echoed search retrieve request",
+                                "required": false
+                            },
+                            {
+                                "help": "",
+                                "name": "sru:resultCountPrecision",
+                                "spec": {
+                                    "type": "text",
+                                    "default": null,
+                                    "required": false,
+                                    "multiline": false
+                                },
+                                "type": "array",
+                                "label": "Sru:result count precision",
+                                "required": false
+                            }
+                        ],
+                        "type": "collection",
+                        "label": "Sru:search retrieve response",
+                        "required": false,
+                        "sequence": true
+                    }
+                ]
+            }
+        },
+        {
+            "id": 5,
+            "module": "builtin:BasicFeeder",
+            "version": 1,
+            "parameters": {},
+            "mapper": {
+                "array": "{{14.`sru:searchRetrieveResponse`.`sru:records`[].`sru:record`}}"
+            },
+            "metadata": {
+                "designer": {
+                    "x": 600,
+                    "y": 0
+                },
+                "restore": {
+                    "expect": {
+                        "array": {
+                            "mode": "edit"
+                        }
+                    }
+                },
+                "expect": [
+                    {
+                        "mode": "edit",
+                        "name": "array",
+                        "spec": [],
+                        "type": "array",
+                        "label": "Array"
+                    }
+                ]
+            }
+        },
+        {
+            "id": 27,
+            "module": "builtin:BasicFeeder",
+            "version": 1,
+            "parameters": {},
+            "mapper": {
+                "array": "{{5.`sru:recordData`[].`gzd:gzd`[].`gzd:enrichedData`[].`gzd:itemUrl`}}"
+            },
+            "metadata": {
+                "designer": {
+                    "x": 900,
+                    "y": 0
+                },
+                "restore": {
+                    "expect": {
+                        "array": {
+                            "mode": "edit"
+                        }
+                    }
+                },
+                "expect": [
+                    {
+                        "mode": "edit",
+                        "name": "array",
+                        "spec": [],
+                        "type": "array",
+                        "label": "Array"
+                    }
+                ]
+            }
+        },
+        {
+            "id": 16,
+            "module": "util:SetVariable2",
+            "version": 1,
+            "parameters": {},
+            "filter": {
+                "name": "itemurl",
+                "conditions": [
+                    [
+                        {
+                            "a": "{{27.`_attributes`.manifestation}}",
+                            "b": "xml",
+                            "o": "text:equal"
+                        }
+                    ]
+                ]
+            },
+            "mapper": {
+                "name": "itemurl",
+                "scope": "roundtrip",
+                "value": "{{27.`_value`}}"
+            },
+            "metadata": {
+                "designer": {
+                    "x": 1200,
+                    "y": 0
+                },
+                "restore": {
+                    "expect": {
+                        "scope": {
+                            "label": "One cycle"
+                        }
+                    }
+                },
+                "expect": [
+                    {
+                        "name": "name",
+                        "type": "text",
+                        "label": "Variable name",
+                        "required": true
+                    },
+                    {
+                        "name": "scope",
+                        "type": "select",
+                        "label": "Variable lifetime",
+                        "required": true,
+                        "validate": {
+                            "enum": [
+                                "roundtrip",
+                                "execution"
+                            ]
+                        }
+                    },
+                    {
+                        "name": "value",
+                        "type": "any",
+                        "label": "Variable value"
+                    }
+                ],
+                "interface": [
+                    {
+                        "name": "itemurl",
+                        "type": "any",
+                        "label": "itemurl"
+                    }
+                ]
+            }
+        },
+        {
+            "id": 7,
+            "module": "util:SetVariable2",
+            "version": 1,
+            "parameters": {},
+            "mapper": {
+                "name": "Type",
+                "scope": "roundtrip",
+                "value": "{{get(split(5.`sru:recordData`[].`gzd:gzd`[].`gzd:originalData`[].`overheidwetgeving:meta`[].`overheidwetgeving:owmskern`[].`dcterms:identifier`[]; \"-\"); 1)}}"
+            },
+            "metadata": {
+                "designer": {
+                    "x": 1500,
+                    "y": 0
+                },
+                "restore": {
+                    "expect": {
+                        "scope": {
+                            "label": "One cycle"
+                        }
+                    }
+                },
+                "expect": [
+                    {
+                        "name": "name",
+                        "type": "text",
+                        "label": "Variable name",
+                        "required": true
+                    },
+                    {
+                        "name": "scope",
+                        "type": "select",
+                        "label": "Variable lifetime",
+                        "required": true,
+                        "validate": {
+                            "enum": [
+                                "roundtrip",
+                                "execution"
+                            ]
+                        }
+                    },
+                    {
+                        "name": "value",
+                        "type": "any",
+                        "label": "Variable value"
+                    }
+                ],
+                "interface": [
+                    {
+                        "name": "Type",
+                        "type": "any",
+                        "label": "Type"
+                    }
+                ]
+            }
+        },
+        {
+            "id": 9,
+            "module": "http:ActionSendData",
+            "version": 3,
+            "parameters": {
+                "handleErrors": true,
+                "useNewZLibDeCompress": true
+            },
+            "mapper": {
+                "ca": "",
+                "qs": [],
+                "url": "{{16.itemurl}}",
+                "data": "",
+                "gzip": true,
+                "method": "get",
+                "headers": [],
+                "timeout": "",
+                "useMtls": false,
+                "authPass": "",
+                "authUser": "",
+                "bodyType": "raw",
+                "contentType": "application/xml",
+                "serializeUrl": false,
+                "shareCookies": false,
+                "parseResponse": false,
+                "followRedirect": true,
+                "useQuerystring": false,
+                "followAllRedirects": false,
+                "rejectUnauthorized": true
+            },
+            "metadata": {
+                "designer": {
+                    "x": 1800,
+                    "y": 0
+                },
+                "restore": {
+                    "expect": {
+                        "qs": {
+                            "mode": "chose"
+                        },
+                        "method": {
+                            "mode": "chose",
+                            "label": "GET"
+                        },
+                        "headers": {
+                            "mode": "chose"
+                        },
+                        "bodyType": {
+                            "label": "Raw"
+                        },
+                        "contentType": {
+                            "label": "XML (application/xml)"
+                        }
+                    }
+                },
+                "parameters": [
+                    {
+                        "name": "handleErrors",
+                        "type": "boolean",
+                        "label": "Evaluate all states as errors (except for 2xx and 3xx )",
+                        "required": true
+                    },
+                    {
+                        "name": "useNewZLibDeCompress",
+                        "type": "hidden"
+                    }
+                ],
+                "expect": [
+                    {
+                        "name": "url",
+                        "type": "url",
+                        "label": "URL",
+                        "required": true
+                    },
+                    {
+                        "name": "serializeUrl",
+                        "type": "boolean",
+                        "label": "Serialize URL",
+                        "required": true
+                    },
+                    {
+                        "name": "method",
+                        "type": "select",
+                        "label": "Method",
+                        "required": true,
+                        "validate": {
+                            "enum": [
+                                "get",
+                                "head",
+                                "post",
+                                "put",
+                                "patch",
+                                "delete",
+                                "options"
+                            ]
+                        }
+                    },
+                    {
+                        "name": "headers",
+                        "spec": [
+                            {
+                                "name": "name",
+                                "type": "text",
+                                "label": "Name",
+                                "required": true
+                            },
+                            {
+                                "name": "value",
+                                "type": "text",
+                                "label": "Value"
+                            }
+                        ],
+                        "type": "array",
+                        "label": "Headers"
+                    },
+                    {
+                        "name": "qs",
+                        "spec": [
+                            {
+                                "name": "name",
+                                "type": "text",
+                                "label": "Name",
+                                "required": true
+                            },
+                            {
+                                "name": "value",
+                                "type": "text",
+                                "label": "Value"
+                            }
+                        ],
+                        "type": "array",
+                        "label": "Query String"
+                    },
+                    {
+                        "name": "bodyType",
+                        "type": "select",
+                        "label": "Body type",
+                        "validate": {
+                            "enum": [
+                                "raw",
+                                "x_www_form_urlencoded",
+                                "multipart_form_data"
+                            ]
+                        }
+                    },
+                    {
+                        "name": "parseResponse",
+                        "type": "boolean",
+                        "label": "Parse response",
+                        "required": true
+                    },
+                    {
+                        "name": "authUser",
+                        "type": "text",
+                        "label": "User name"
+                    },
+                    {
+                        "name": "authPass",
+                        "type": "password",
+                        "label": "Password"
+                    },
+                    {
+                        "name": "timeout",
+                        "type": "uinteger",
+                        "label": "Timeout",
+                        "validate": {
+                            "max": 300,
+                            "min": 1
+                        }
+                    },
+                    {
+                        "name": "shareCookies",
+                        "type": "boolean",
+                        "label": "Share cookies with other HTTP modules",
+                        "required": true
+                    },
+                    {
+                        "name": "ca",
+                        "type": "cert",
+                        "label": "Self-signed certificate"
+                    },
+                    {
+                        "name": "rejectUnauthorized",
+                        "type": "boolean",
+                        "label": "Reject connections that are using unverified (self-signed) certificates",
+                        "required": true
+                    },
+                    {
+                        "name": "followRedirect",
+                        "type": "boolean",
+                        "label": "Follow redirect",
+                        "required": true
+                    },
+                    {
+                        "name": "useQuerystring",
+                        "type": "boolean",
+                        "label": "Disable serialization of multiple same query string keys as arrays",
+                        "required": true
+                    },
+                    {
+                        "name": "gzip",
+                        "type": "boolean",
+                        "label": "Request compressed content",
+                        "required": true
+                    },
+                    {
+                        "name": "useMtls",
+                        "type": "boolean",
+                        "label": "Use Mutual TLS",
+                        "required": true
+                    },
+                    {
+                        "name": "contentType",
+                        "type": "select",
+                        "label": "Content type",
+                        "validate": {
+                            "enum": [
+                                "text/plain",
+                                "application/json",
+                                "application/xml",
+                                "text/xml",
+                                "text/html",
+                                "custom"
+                            ]
+                        }
+                    },
+                    {
+                        "name": "data",
+                        "type": "buffer",
+                        "label": "Request content"
+                    },
+                    {
+                        "name": "followAllRedirects",
+                        "type": "boolean",
+                        "label": "Follow all redirect",
+                        "required": true
+                    }
+                ]
+            }
+        },
+        {
+            "id": 4,
+            "module": "xml:ParseXML",
+            "version": 1,
+            "parameters": {
+                "type": 418763,
+                "preserveNumbersAsText": false
+            },
+            "mapper": {
+                "xml": "{{9.data}}"
+            },
+            "metadata": {
+                "designer": {
+                    "x": 2100,
+                    "y": 0
+                },
+                "restore": {
+                    "parameters": {
+                        "type": {
+                            "label": "New kop dataset"
+                        }
+                    }
+                },
+                "parameters": [
+                    {
+                        "name": "type",
+                        "type": "udt",
+                        "label": "Data structure"
+                    },
+                    {
+                        "name": "preserveNumbersAsText",
+                        "type": "boolean",
+                        "label": "Preserve numbers as text",
+                        "required": true
+                    }
+                ],
+                "expect": [
+                    {
+                        "name": "xml",
+                        "type": "text",
+                        "label": "XML",
+                        "required": true
+                    }
+                ],
+                "interface": [
+                    {
+                        "help": "",
+                        "name": "officiele-publicatie",
+                        "spec": [
+                            {
+                                "help": "",
+                                "name": "_attributes",
+                                "spec": [
+                                    {
+                                        "help": "",
+                                        "name": "xsi:noNamespaceSchemaLocation",
+                                        "type": "text",
+                                        "label": "Xsi:no namespace schema location",
+                                        "default": null,
+                                        "required": false,
+                                        "multiline": false
+                                    },
+                                    {
+                                        "help": "",
+                                        "name": "xmlns:xsi",
+                                        "type": "text",
+                                        "label": "Xmlns:xsi",
+                                        "default": "http://www.w3.org/2001/XMLSchema-instance",
+                                        "required": false,
+                                        "multiline": false
+                                    }
+                                ],
+                                "type": "collection",
+                                "label": " attributes",
+                                "required": false,
+                                "sequence": true
+                            },
+                            {
+                                "help": "",
+                                "name": "metadata",
+                                "spec": {
+                                    "spec": [
+                                        {
+                                            "help": "",
+                                            "name": "meta",
+                                            "spec": {
+                                                "spec": [
+                                                    {
+                                                        "help": "",
+                                                        "name": "_attributes",
+                                                        "spec": [
+                                                            {
+                                                                "help": "",
+                                                                "name": "name",
+                                                                "type": "text",
+                                                                "label": null,
+                                                                "default": null,
+                                                                "required": false,
+                                                                "multiline": false
+                                                            },
+                                                            {
+                                                                "help": "",
+                                                                "name": "content",
+                                                                "type": "text",
+                                                                "label": null,
+                                                                "default": null,
+                                                                "required": false,
+                                                                "multiline": false
+                                                            },
+                                                            {
+                                                                "help": "",
+                                                                "name": "scheme",
+                                                                "type": "text",
+                                                                "label": null,
+                                                                "default": null,
+                                                                "required": false,
+                                                                "multiline": false
+                                                            }
+                                                        ],
+                                                        "type": "collection",
+                                                        "label": null,
+                                                        "required": false,
+                                                        "sequence": true
+                                                    }
+                                                ],
+                                                "type": "collection",
+                                                "required": false,
+                                                "sequence": true
+                                            },
+                                            "type": "array",
+                                            "label": null,
+                                            "required": false
+                                        }
+                                    ],
+                                    "type": "collection",
+                                    "required": false,
+                                    "sequence": true
+                                },
+                                "type": "array",
+                                "label": "Metadata",
+                                "required": false
+                            },
+                            {
+                                "help": "",
+                                "name": "kop",
+                                "spec": {
+                                    "spec": [
+                                        {
+                                            "help": "",
+                                            "name": "titel",
+                                            "spec": {
+                                                "type": "text",
+                                                "default": null,
+                                                "required": false,
+                                                "multiline": false
+                                            },
+                                            "type": "array",
+                                            "label": null,
+                                            "required": false
+                                        },
+                                        {
+                                            "help": "",
+                                            "name": "subtitel",
+                                            "spec": {
+                                                "type": "text",
+                                                "default": null,
+                                                "required": false,
+                                                "multiline": false
+                                            },
+                                            "type": "array",
+                                            "label": null,
+                                            "required": false
+                                        }
+                                    ],
+                                    "type": "collection",
+                                    "required": false,
+                                    "sequence": true
+                                },
+                                "type": "array",
+                                "label": "Kop",
+                                "required": false
+                            },
+                            {
+                                "help": "",
+                                "name": "gemeenteblad",
+                                "spec": {
+                                    "spec": [
+                                        {
+                                            "help": "",
+                                            "name": "kop",
+                                            "spec": {
+                                                "spec": [
+                                                    {
+                                                        "help": "",
+                                                        "name": "titel",
+                                                        "spec": {
+                                                            "type": "text",
+                                                            "default": null,
+                                                            "required": false,
+                                                            "multiline": false
+                                                        },
+                                                        "type": "array",
+                                                        "label": null,
+                                                        "required": false
+                                                    }
+                                                ],
+                                                "type": "collection",
+                                                "required": false,
+                                                "sequence": true
+                                            },
+                                            "type": "array",
+                                            "label": null,
+                                            "required": false
+                                        },
+                                        {
+                                            "help": "",
+                                            "name": "zakelijke-mededeling",
+                                            "spec": {
+                                                "spec": [
+                                                    {
+                                                        "help": "",
+                                                        "name": "zakelijke-mededeling-tekst",
+                                                        "spec": {
+                                                            "spec": [
+                                                                {
+                                                                    "help": "",
+                                                                    "name": "tekst",
+                                                                    "spec": {
+                                                                        "spec": [
+                                                                            {
+                                                                                "help": "",
+                                                                                "name": "al",
+                                                                                "spec": {
+                                                                                    "name": "value",
+                                                                                    "type": "text",
+                                                                                    "label": "Value",
+                                                                                    "default": null,
+                                                                                    "required": false,
+                                                                                    "multiline": false
+                                                                                },
+                                                                                "type": "array",
+                                                                                "label": null,
+                                                                                "required": false
+                                                                            }
+                                                                        ],
+                                                                        "type": "collection",
+                                                                        "required": false,
+                                                                        "sequence": true
+                                                                    },
+                                                                    "type": "array",
+                                                                    "label": null,
+                                                                    "required": false
+                                                                }
+                                                            ],
+                                                            "type": "collection",
+                                                            "required": false,
+                                                            "sequence": true
+                                                        },
+                                                        "type": "array",
+                                                        "label": null,
+                                                        "required": false
+                                                    }
+                                                ],
+                                                "type": "collection",
+                                                "required": false,
+                                                "sequence": true
+                                            },
+                                            "type": "array",
+                                            "label": null,
+                                            "required": false
+                                        }
+                                    ],
+                                    "type": "collection",
+                                    "required": false,
+                                    "sequence": true
+                                },
+                                "type": "array",
+                                "label": "Gemeenteblad",
+                                "required": false
+                            }
+                        ],
+                        "type": "collection",
+                        "label": "Officiele publicatie",
+                        "required": false,
+                        "sequence": true
+                    }
+                ]
+            }
+        },
+        {
+            "id": 17,
+            "module": "util:SetVariable2",
+            "version": 1,
+            "parameters": {},
+            "mapper": {
+                "name": "zaaknummer",
+                "scope": "roundtrip",
+                "value": "{{4.`officiele-publicatie`.gemeenteblad[].`zakelijke-mededeling`[].`zakelijke-mededeling-tekst`[].tekst[].al[4]}}"
+            },
+            "metadata": {
+                "designer": {
+                    "x": 2400,
+                    "y": 0
+                },
+                "restore": {
+                    "expect": {
+                        "scope": {
+                            "label": "One cycle"
+                        }
+                    }
+                },
+                "expect": [
+                    {
+                        "name": "name",
+                        "type": "text",
+                        "label": "Variable name",
+                        "required": true
+                    },
+                    {
+                        "name": "scope",
+                        "type": "select",
+                        "label": "Variable lifetime",
+                        "required": true,
+                        "validate": {
+                            "enum": [
+                                "roundtrip",
+                                "execution"
+                            ]
+                        }
+                    },
+                    {
+                        "name": "value",
+                        "type": "any",
+                        "label": "Variable value"
+                    }
+                ],
+                "interface": [
+                    {
+                        "name": "zaaknummer",
+                        "type": "any",
+                        "label": "zaaknummer"
+                    }
+                ]
+            }
+        },
+        {
+            "id": 25,
+            "module": "util:SetVariable2",
+            "version": 1,
+            "parameters": {},
+            "mapper": {
+                "name": "Address",
+                "scope": "roundtrip",
+                "value": "{{4.`officiele-publicatie`.gemeenteblad[].`zakelijke-mededeling`[].`zakelijke-mededeling-tekst`[].tekst[].al[1]}}"
+            },
+            "metadata": {
+                "designer": {
+                    "x": 2700,
+                    "y": 0
+                },
+                "restore": {
+                    "expect": {
+                        "scope": {
+                            "label": "One cycle"
+                        }
+                    }
+                },
+                "expect": [
+                    {
+                        "name": "name",
+                        "type": "text",
+                        "label": "Variable name",
+                        "required": true
+                    },
+                    {
+                        "name": "scope",
+                        "type": "select",
+                        "label": "Variable lifetime",
+                        "required": true,
+                        "validate": {
+                            "enum": [
+                                "roundtrip",
+                                "execution"
+                            ]
+                        }
+                    },
+                    {
+                        "name": "value",
+                        "type": "any",
+                        "label": "Variable value"
+                    }
+                ],
+                "interface": [
+                    {
+                        "name": "Address",
+                        "type": "any",
+                        "label": "Address"
+                    }
+                ]
+            }
+        },
+        {
+            "id": 6,
+            "module": "google-sheets:addRow",
+            "version": 2,
+            "parameters": {
+                "__IMTCONN__": 2444668
+            },
+            "mapper": {
+                "from": "share",
+                "mode": "select",
+                "values": {
+                    "0": "{{5.`sru:recordData`[].`gzd:gzd`[].`gzd:originalData`[].`overheidwetgeving:meta`[].`overheidwetgeving:owmskern`[].`dcterms:identifier`[]}}",
+                    "1": "{{5.`sru:recordData`[].`gzd:gzd`[].`gzd:originalData`[].`overheidwetgeving:meta`[].`overheidwetgeving:owmsmantel`[].`dcterms:date`[]}}",
+                    "2": "{{7.Type}}",
+                    "3": "{{5.`sru:recordData`[].`gzd:gzd`[].`gzd:originalData`[].`overheidwetgeving:meta`[].`overheidwetgeving:owmskern`[].`dcterms:title`[]}}",
+                    "4": "{{5.`sru:recordData`[].`gzd:gzd`[].`gzd:originalData`[].`overheidwetgeving:meta`[].`overheidwetgeving:owmskern`[].`dcterms:type`[].`_value`}}",
+                    "5": "{{5.`sru:recordData`[].`gzd:gzd`[].`gzd:originalData`[].`overheidwetgeving:meta`[].`overheidwetgeving:owmsmantel`[].`dcterms:publisher`[].`_value`}}",
+                    "6": "{{5.`sru:recordData`[].`gzd:gzd`[].`gzd:enrichedData`[].`gzd:preferredUrl`[]}}",
+                    "8": "{{5.`sru:recordData`[].`gzd:gzd`[].`gzd:enrichedData`[].`gzd:itemUrl`[].`_value`}}",
+                    "9": "{{4.`officiele-publicatie`.kop[].titel[]}}",
+                    "10": "{{4.`officiele-publicatie`.kop[].subtitel[]}}",
+                    "11": "{{4.`officiele-publicatie`.gemeenteblad[].kop[].titel[]}}",
+                    "12": "{{4.`officiele-publicatie`.gemeenteblad[].`zakelijke-mededeling`[].`zakelijke-mededeling-tekst`[].tekst[].al[]}}",
+                    "13": "{{17.zaaknummer}}",
+                    "15": "{{25.Address}}",
+                    "19": "{{14.`sru:searchRetrieveResponse`.`sru:records`[].`sru:record`[].`sru:recordData`[].`gzd:gzd`[].`gzd:originalData`[].`overheidwetgeving:meta`[].`overheidwetgeving:owmsmantel`[].`dcterms:date`[]}}",
+                    "20": "{{14.`sru:searchRetrieveResponse`.`sru:records`[].`sru:record`[].`sru:recordData`[].`gzd:gzd`[].`gzd:originalData`[].`overheidwetgeving:meta`[].`overheidwetgeving:owmskern`[].`dcterms:modified`[]}}"
+                },
+                "sheetId": "Publications",
+                "spreadsheetId": "/182yQ_AKWW0z_vNdXxfslsceHnF8aHEpNuxyiv-_lleQ",
+                "includesHeaders": true,
+                "insertDataOption": "INSERT_ROWS",
+                "valueInputOption": "USER_ENTERED",
+                "insertUnformatted": false
+            },
+            "metadata": {
+                "designer": {
+                    "x": 3000,
+                    "y": 0
+                },
+                "restore": {
+                    "expect": {
+                        "from": {
+                            "label": "Shared with me"
+                        },
+                        "mode": {
+                            "label": "Search by path"
+                        },
+                        "sheetId": {
+                            "label": "Publications"
+                        },
+                        "spreadsheetId": {
+                            "path": [
+                                "Bouwvergunningen Feed"
+                            ]
+                        },
+                        "includesHeaders": {
+                            "label": "Yes",
+                            "nested": [
+                                {
+                                    "name": "values",
+                                    "spec": [
+                                        {
+                                            "name": "0",
+                                            "type": "text",
+                                            "label": "identifier (A)"
+                                        },
+                                        {
+                                            "name": "1",
+                                            "type": "text",
+                                            "label": "publication_date (B)"
+                                        },
+                                        {
+                                            "name": "2",
+                                            "type": "text",
+                                            "label": "source_type (C)"
+                                        },
+                                        {
+                                            "name": "3",
+                                            "type": "text",
+                                            "label": "title (D)"
+                                        },
+                                        {
+                                            "name": "4",
+                                            "type": "text",
+                                            "label": "doc_type (E)"
+                                        },
+                                        {
+                                            "name": "5",
+                                            "type": "text",
+                                            "label": "publisher (F)"
+                                        },
+                                        {
+                                            "name": "6",
+                                            "type": "text",
+                                            "label": "publication_url (G)"
+                                        },
+                                        {
+                                            "name": "7",
+                                            "type": "text",
+                                            "label": "metadata_url (H)"
+                                        },
+                                        {
+                                            "name": "8",
+                                            "type": "text",
+                                            "label": "raw_xml_link (I)"
+                                        },
+                                        {
+                                            "name": "9",
+                                            "type": "text",
+                                            "label": "kop_titel (J)"
+                                        },
+                                        {
+                                            "name": "10",
+                                            "type": "text",
+                                            "label": "kop_subtitel (K)"
+                                        },
+                                        {
+                                            "name": "11",
+                                            "type": "text",
+                                            "label": "project_title (L)"
+                                        },
+                                        {
+                                            "name": "12",
+                                            "type": "text",
+                                            "label": "full_text (M)"
+                                        },
+                                        {
+                                            "name": "13",
+                                            "type": "text",
+                                            "label": "case_number (N)"
+                                        },
+                                        {
+                                            "name": "14",
+                                            "type": "text",
+                                            "label": "contact_info (O)"
+                                        },
+                                        {
+                                            "name": "15",
+                                            "type": "text",
+                                            "label": "address (P)"
+                                        },
+                                        {
+                                            "name": "16",
+                                            "type": "text",
+                                            "label": "cadastral_info (Q)"
+                                        },
+                                        {
+                                            "name": "17",
+                                            "type": "text",
+                                            "label": "legal_refs (R)"
+                                        },
+                                        {
+                                            "name": "18",
+                                            "type": "text",
+                                            "label": "deadlines (S)"
+                                        },
+                                        {
+                                            "name": "19",
+                                            "type": "text",
+                                            "label": "created_at (T)"
+                                        },
+                                        {
+                                            "name": "20",
+                                            "type": "text",
+                                            "label": "updated_at (U)"
+                                        },
+                                        {
+                                            "name": "21",
+                                            "type": "text",
+                                            "label": "(V)"
+                                        },
+                                        {
+                                            "name": "22",
+                                            "type": "text",
+                                            "label": "(W)"
+                                        },
+                                        {
+                                            "name": "23",
+                                            "type": "text",
+                                            "label": "(X)"
+                                        },
+                                        {
+                                            "name": "24",
+                                            "type": "text",
+                                            "label": "(Y)"
+                                        },
+                                        {
+                                            "name": "25",
+                                            "type": "text",
+                                            "label": "(Z)"
+                                        }
+                                    ],
+                                    "type": "collection",
+                                    "label": "Values"
+                                }
+                            ]
+                        },
+                        "insertDataOption": {
+                            "mode": "chose",
+                            "label": "Insert rows"
+                        },
+                        "valueInputOption": {
+                            "mode": "chose",
+                            "label": "User entered"
+                        },
+                        "insertUnformatted": {
+                            "mode": "chose"
+                        }
+                    },
+                    "parameters": {
+                        "__IMTCONN__": {
+                            "data": {
+                                "scoped": "true",
+                                "connection": "google"
+                            },
+                            "label": "Training Connection (daogundiran17@gmail.com)"
+                        }
+                    }
+                },
+                "parameters": [
+                    {
+                        "name": "__IMTCONN__",
+                        "type": "account:google",
+                        "label": "Connection",
+                        "required": true
+                    }
+                ],
+                "expect": [
+                    {
+                        "name": "mode",
+                        "type": "select",
+                        "label": "Search Method",
+                        "required": true,
+                        "validate": {
+                            "enum": [
+                                "select",
+                                "fromAll",
+                                "map"
+                            ]
+                        }
+                    },
+                    {
+                        "name": "insertUnformatted",
+                        "type": "boolean",
+                        "label": "Unformatted",
+                        "required": true
+                    },
+                    {
+                        "name": "valueInputOption",
+                        "type": "select",
+                        "label": "Value input option",
+                        "validate": {
+                            "enum": [
+                                "USER_ENTERED",
+                                "RAW"
+                            ]
+                        }
+                    },
+                    {
+                        "name": "insertDataOption",
+                        "type": "select",
+                        "label": "Insert data option",
+                        "validate": {
+                            "enum": [
+                                "INSERT_ROWS",
+                                "OVERWRITE"
+                            ]
+                        }
+                    },
+                    {
+                        "name": "from",
+                        "type": "select",
+                        "label": "Drive",
+                        "required": true,
+                        "validate": {
+                            "enum": [
+                                "drive",
+                                "share",
+                                "team"
+                            ]
+                        }
+                    },
+                    {
+                        "name": "spreadsheetId",
+                        "type": "file",
+                        "label": "Spreadsheet ID",
+                        "required": true
+                    },
+                    {
+                        "name": "sheetId",
+                        "type": "select",
+                        "label": "Sheet Name",
+                        "required": true
+                    },
+                    {
+                        "name": "includesHeaders",
+                        "type": "select",
+                        "label": "Table contains headers",
+                        "required": true,
+                        "validate": {
+                            "enum": [
+                                true,
+                                false
+                            ]
+                        }
+                    },
+                    {
+                        "name": "values",
+                        "spec": [
+                            {
+                                "name": "0",
+                                "type": "text",
+                                "label": "identifier (A)"
+                            },
+                            {
+                                "name": "1",
+                                "type": "text",
+                                "label": "publication_date (B)"
+                            },
+                            {
+                                "name": "2",
+                                "type": "text",
+                                "label": "source_type (C)"
+                            },
+                            {
+                                "name": "3",
+                                "type": "text",
+                                "label": "title (D)"
+                            },
+                            {
+                                "name": "4",
+                                "type": "text",
+                                "label": "doc_type (E)"
+                            },
+                            {
+                                "name": "5",
+                                "type": "text",
+                                "label": "publisher (F)"
+                            },
+                            {
+                                "name": "6",
+                                "type": "text",
+                                "label": "publication_url (G)"
+                            },
+                            {
+                                "name": "7",
+                                "type": "text",
+                                "label": "metadata_url (H)"
+                            },
+                            {
+                                "name": "8",
+                                "type": "text",
+                                "label": "raw_xml_link (I)"
+                            },
+                            {
+                                "name": "9",
+                                "type": "text",
+                                "label": "kop_titel (J)"
+                            },
+                            {
+                                "name": "10",
+                                "type": "text",
+                                "label": "kop_subtitel (K)"
+                            },
+                            {
+                                "name": "11",
+                                "type": "text",
+                                "label": "project_title (L)"
+                            },
+                            {
+                                "name": "12",
+                                "type": "text",
+                                "label": "full_text (M)"
+                            },
+                            {
+                                "name": "13",
+                                "type": "text",
+                                "label": "case_number (N)"
+                            },
+                            {
+                                "name": "14",
+                                "type": "text",
+                                "label": "contact_info (O)"
+                            },
+                            {
+                                "name": "15",
+                                "type": "text",
+                                "label": "address (P)"
+                            },
+                            {
+                                "name": "16",
+                                "type": "text",
+                                "label": "cadastral_info (Q)"
+                            },
+                            {
+                                "name": "17",
+                                "type": "text",
+                                "label": "legal_refs (R)"
+                            },
+                            {
+                                "name": "18",
+                                "type": "text",
+                                "label": "deadlines (S)"
+                            },
+                            {
+                                "name": "19",
+                                "type": "text",
+                                "label": "created_at (T)"
+                            },
+                            {
+                                "name": "20",
+                                "type": "text",
+                                "label": "updated_at (U)"
+                            },
+                            {
+                                "name": "21",
+                                "type": "text",
+                                "label": "(V)"
+                            },
+                            {
+                                "name": "22",
+                                "type": "text",
+                                "label": "(W)"
+                            },
+                            {
+                                "name": "23",
+                                "type": "text",
+                                "label": "(X)"
+                            },
+                            {
+                                "name": "24",
+                                "type": "text",
+                                "label": "(Y)"
+                            },
+                            {
+                                "name": "25",
+                                "type": "text",
+                                "label": "(Z)"
+                            }
+                        ],
+                        "type": "collection",
+                        "label": "Values"
+                    }
+                ]
+            }
+        }
+    ],
+    "metadata": {
+        "instant": false,
+        "version": 1,
+        "scenario": {
+            "roundtrips": 1,
+            "maxErrors": 3,
+            "autoCommit": true,
+            "autoCommitTriggerLast": true,
+            "sequential": false,
+            "slots": null,
+            "confidential": false,
+            "dataloss": false,
+            "dlq": false,
+            "freshVariables": false
+        },
+        "designer": {
+            "orphans": []
+        },
+        "zone": "eu2.make.com",
+        "notes": []
+    }
+}

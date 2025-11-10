@@ -1,0 +1,119 @@
+{
+  "name": "Send Team Emails with Group Details",
+  "flow": [
+    {
+      "id": 1,
+      "module": "google-sheets:filterRows",
+      "version": 2,
+      "parameters": {},
+      "mapper": {
+        "spreadsheetId": "your_spreadsheet_id_here",
+        "sheetId": "Form Responses 1",
+        "from": "drive",
+        "limit": "100",
+        "includesHeaders": true
+      },
+      "metadata": {
+        "designer": {
+          "x": 0,
+          "y": 0
+        }
+      }
+    },
+    {
+      "id": 2,
+      "module": "builtin:BasicAggregator",
+      "version": 1,
+      "parameters": {
+        "feeder": 1
+      },
+      "mapper": {
+        "First Name": "{{1.`1`}}",
+        "Last Name": "{{1.`2`}}",
+        "Email": "{{1.`3`}}",
+        "Team Number": "{{1.`8`}}"
+      },
+      "flags": {
+        "groupBy": "{{1.`8`}}"
+      },
+      "metadata": {
+        "designer": {
+          "x": 300,
+          "y": 0
+        }
+      }
+    },
+    {
+      "id": 3,
+      "module": "builtin:BasicFeeder",
+      "version": 1,
+      "mapper": {
+        "array": "{{2.array}}"
+      },
+      "metadata": {
+        "designer": {
+          "x": 600,
+          "y": 0
+        }
+      }
+    },
+    {
+      "id": 4,
+      "module": "builtin:Iterator",
+      "version": 1,
+      "parameters": {},
+      "mapper": {
+        "array": "{{3.value}}"
+      },
+      "metadata": {
+        "designer": {
+          "x": 900,
+          "y": 0
+        }
+      }
+    },
+    {
+      "id": 5,
+      "module": "tools:TextAggregator",
+      "version": 1,
+      "parameters": {
+        "mode": "join",
+        "delimiter": "\n",
+        "text": "- {{4.First Name}} {{4.Last Name}} ({{4.Email}})"
+      },
+      "mapper": {},
+      "metadata": {
+        "designer": {
+          "x": 1200,
+          "y": 0
+        }
+      }
+    },
+    {
+      "id": 6,
+      "module": "email:ActionSendEmail",
+      "version": 7,
+      "parameters": {
+        "connection": "your_smtp_or_gmail_connection_id"
+      },
+      "mapper": {
+        "to": "{{4.Email}}",
+        "subject": "Welcome to Team {{4.`Team Number`}}",
+        "contentType": "text/plain",
+        "body": "Hi {{4.First Name}},\n\nYou're in Team {{4.`Team Number`}}. Here are your teammates:\n\n{{5.output}}\n\nGood luck collaborating!"
+      },
+      "metadata": {
+        "designer": {
+          "x": 1500,
+          "y": 0
+        }
+      }
+    }
+  ],
+  "metadata": {
+    "version": 1,
+    "designer": {
+      "orphans": []
+    }
+  }
+}

@@ -1,0 +1,401 @@
+{
+  "name": "Client Onboarding- Google drive + Gmail",
+  "nodes": [
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "8074be28-e52c-464e-9d19-223d82809a86",
+              "leftValue": "={{ $json.body.data.fields[3].value[0] }}",
+              "rightValue": "={{ $json.body.data.fields[3].options[0].id }}",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "looseTypeValidation": true,
+        "options": {
+          "ignoreCase": false
+        }
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        -380,
+        -160
+      ],
+      "id": "1b16e11c-d8c4-464c-8c17-0d765943c3b3",
+      "name": "If"
+    },
+    {
+      "parameters": {
+        "sendTo": "={{ $json.body.data.fields[0].value }}",
+        "subject": "Welcome Onboard, Lets build the workflow",
+        "emailType": "text",
+        "message": "=Hi {{ $json.body.data.fields[1].value }}  ,\n\nWelcome Onboard, lets build an exciting marketing tool to scale your business",
+        "options": {
+          "appendAttribution": false
+        }
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.1,
+      "position": [
+        -160,
+        -60
+      ],
+      "id": "20e780d9-0c58-4ad0-abb2-556c5ab06a13",
+      "name": "Marketing Automation",
+      "webhookId": "fa61da96-86dd-4791-82ca-3fe6aef0f5c0",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "kJWr9MpOh2pbMKSQ",
+          "name": "Gmail account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "sendTo": "={{ $('Webhook').item.json.body.data.fields[0].value }}",
+        "subject": "Welcome Onboard",
+        "emailType": "text",
+        "message": "=Hi {{ $('Webhook').item.json.body.data.fields[1].value }} ,\n\nWelcome onboard to the automation agency. Lets build your site",
+        "options": {
+          "appendAttribution": false
+        }
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.1,
+      "position": [
+        -160,
+        -260
+      ],
+      "id": "54ae3a32-1345-422a-a4fb-949084420ecd",
+      "name": "Web Design",
+      "webhookId": "ec0bf283-d71f-49a0-8e6e-c9f1c07ab49b",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "kJWr9MpOh2pbMKSQ",
+          "name": "Gmail account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "inputDataFieldName": "=data",
+        "name": "=",
+        "driveId": {
+          "__rl": true,
+          "mode": "list",
+          "value": "My Drive"
+        },
+        "folderId": {
+          "__rl": true,
+          "value": "=\n {{ $('Create folder').item.json.id }}",
+          "mode": "id"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleDrive",
+      "typeVersion": 3,
+      "position": [
+        500,
+        -160
+      ],
+      "id": "84a6f194-5250-46e0-95ff-d63b24dbc0cf",
+      "name": "Upload file",
+      "credentials": {
+        "googleDriveOAuth2Api": {
+          "id": "t6MPm3pQ77dWi8kx",
+          "name": "Google Drive account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "resource": "folder",
+        "name": "={{ $('Webhook').item.json.body.data.fields[1].value }}",
+        "driveId": {
+          "__rl": true,
+          "value": "My Drive",
+          "mode": "list",
+          "cachedResultName": "My Drive",
+          "cachedResultUrl": "https://drive.google.com/drive/my-drive"
+        },
+        "folderId": {
+          "__rl": true,
+          "value": "root",
+          "mode": "list",
+          "cachedResultName": "/ (Root folder)",
+          "cachedResultUrl": "https://drive.google.com/drive"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleDrive",
+      "typeVersion": 3,
+      "position": [
+        60,
+        -160
+      ],
+      "id": "b935545d-9360-43a7-ac82-12e21b0890d1",
+      "name": "Create folder",
+      "credentials": {
+        "googleDriveOAuth2Api": {
+          "id": "t6MPm3pQ77dWi8kx",
+          "name": "Google Drive account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "03869979-73ad-4fb6-95fa-9cf8763b0170",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [
+        -600,
+        -160
+      ],
+      "id": "8eeb7fc1-89b1-472b-a3dd-7e1b00128908",
+      "name": "Webhook",
+      "webhookId": "03869979-73ad-4fb6-95fa-9cf8763b0170"
+    },
+    {
+      "parameters": {
+        "url": "={{ $('Webhook').item.json.body.data.fields[4].value[0].url }}",
+        "options": {
+          "response": {
+            "response": {
+              "responseFormat": "file"
+            }
+          }
+        }
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        280,
+        -160
+      ],
+      "id": "4c493084-464c-4034-b7ff-3eee5d4dafc3",
+      "name": "HTTP Request"
+    }
+  ],
+  "pinData": {
+    "Webhook": [
+      {
+        "json": {
+          "headers": {
+            "host": "egbuleomoze.app.n8n.cloud",
+            "user-agent": "Tally Webhooks",
+            "content-length": "1548",
+            "accept": "application/json, text/plain, */*",
+            "accept-encoding": "gzip, br",
+            "baggage": "sentry-environment=production,sentry-release=ec6c9b99ad28edd3f6afc8046468bddbf91210ac,sentry-public_key=6af4b6673f1648edaa8fef3f2ca43405,sentry-trace_id=edcb4e98a3f021189df759a7777d6092,sentry-org_id=407628,sentry-sampled=false,sentry-sample_rand=0.4150875214425114,sentry-sample_rate=0.01",
+            "cdn-loop": "cloudflare; loops=1; subreqs=1",
+            "cf-connecting-ip": "34.96.41.139",
+            "cf-ew-via": "15",
+            "cf-ipcountry": "BE",
+            "cf-ray": "95e078f595f994d9-LHR",
+            "cf-visitor": "{\"scheme\":\"https\"}",
+            "cf-worker": "n8n.cloud",
+            "content-type": "application/json",
+            "sentry-trace": "edcb4e98a3f021189df759a7777d6092-1d26778b92959b56-0",
+            "x-forwarded-for": "34.96.41.139, 172.70.163.77",
+            "x-forwarded-host": "egbuleomoze.app.n8n.cloud",
+            "x-forwarded-port": "443",
+            "x-forwarded-proto": "https",
+            "x-forwarded-server": "traefik-prod-users-gwc-59-5786bcf55-sms9c",
+            "x-is-trusted": "yes",
+            "x-real-ip": "34.96.41.139"
+          },
+          "params": {},
+          "query": {},
+          "body": {
+            "eventId": "8890c381-bf39-4fe0-bef9-64c2df1dc03d",
+            "eventType": "FORM_RESPONSE",
+            "createdAt": "2025-07-12T12:16:34.076Z",
+            "data": {
+              "responseId": "vGBRqYl",
+              "submissionId": "vGBRqYl",
+              "respondentId": "RNpReQ",
+              "formId": "nPNx70",
+              "formName": "CLIENT ONBOARDING",
+              "createdAt": "2025-07-12T12:16:33.000Z",
+              "fields": [
+                {
+                  "key": "question_zMGQkZ",
+                  "label": "Email",
+                  "type": "INPUT_EMAIL",
+                  "value": "egbuleomoze@gmail.com"
+                },
+                {
+                  "key": "question_59eqJv",
+                  "label": "Name",
+                  "type": "INPUT_TEXT",
+                  "value": "TOBI"
+                },
+                {
+                  "key": "question_d082OD",
+                  "label": "Budget",
+                  "type": "MULTIPLE_CHOICE",
+                  "value": [
+                    "f58dd2da-d69b-4fb0-9896-8b1c82e63efc"
+                  ],
+                  "options": [
+                    {
+                      "id": "f58dd2da-d69b-4fb0-9896-8b1c82e63efc",
+                      "text": "$100"
+                    },
+                    {
+                      "id": "245e1bba-ab3d-4ccf-8a74-d7242a596622",
+                      "text": "$500"
+                    },
+                    {
+                      "id": "d7281b06-1c0c-430b-befa-8cec55b269e7",
+                      "text": "$1000"
+                    }
+                  ]
+                },
+                {
+                  "key": "question_YGJz1z",
+                  "label": "Service",
+                  "type": "MULTIPLE_CHOICE",
+                  "value": [
+                    "62f4872f-fe4b-4c95-b8c0-c31c05391286"
+                  ],
+                  "options": [
+                    {
+                      "id": "a9e3c05e-f682-4ffb-94a1-a97526a277a5",
+                      "text": "Web Design"
+                    },
+                    {
+                      "id": "62f4872f-fe4b-4c95-b8c0-c31c05391286",
+                      "text": "Marketing Automation"
+                    }
+                  ]
+                },
+                {
+                  "key": "question_DpxvjX",
+                  "label": "Upload Business Certificate",
+                  "type": "FILE_UPLOAD",
+                  "value": [
+                    {
+                      "id": "ZlD1zv",
+                      "name": "OMOZE Professional DP.jpeg",
+                      "url": "https://storage.tally.so/private/OMOZE-Professional-DP.jpeg?id=ZlD1zv&accessToken=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IlpsRDF6diIsImZvcm1JZCI6Im5QTng3MCIsImlhdCI6MTc1MjMyMjU5NH0.Jw1YZgtsJoF9NXRR-ftLIyW_5NDyZxYlo6w5j1Zd8TA&signature=57b68e5300975578fbce1c9e8415afe9658b7b639bb4c72a759bc82ae3785722",
+                      "mimeType": "image/jpeg",
+                      "size": 52243
+                    }
+                  ]
+                }
+              ]
+            }
+          },
+          "webhookUrl": "https://egbuleomoze.app.n8n.cloud/webhook/03869979-73ad-4fb6-95fa-9cf8763b0170",
+          "executionMode": "production"
+        }
+      }
+    ]
+  },
+  "connections": {
+    "If": {
+      "main": [
+        [
+          {
+            "node": "Web Design",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Marketing Automation",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Marketing Automation": {
+      "main": [
+        [
+          {
+            "node": "Create folder",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Web Design": {
+      "main": [
+        [
+          {
+            "node": "Create folder",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Create folder": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "If",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request": {
+      "main": [
+        [
+          {
+            "node": "Upload file",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1",
+    "saveExecutionProgress": true,
+    "callerPolicy": "workflowsFromSameOwner",
+    "timeSavedPerExecution": 1
+  },
+  "versionId": "69898265-86f9-4dd5-8ba6-dc6b4a18879f",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "7e83013067dad4939204224b15e0b751889a2895e88388e06d5572a9215757f1"
+  },
+  "id": "PpqVJ9Aw9oh7nMep",
+  "tags": []
+}

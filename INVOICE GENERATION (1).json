@@ -1,0 +1,341 @@
+{
+  "name": "INVOICE GENERATION",
+  "nodes": [
+    {
+      "parameters": {
+        "pollTimes": {
+          "item": [
+            {
+              "mode": "everyMinute"
+            }
+          ]
+        },
+        "documentId": {
+          "__rl": true,
+          "value": "1f_fPqRa2ex4NzTk2GupCFXNjwvyvlqbKdFzRv4ZRv6M",
+          "mode": "list",
+          "cachedResultName": "INVOICE",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1f_fPqRa2ex4NzTk2GupCFXNjwvyvlqbKdFzRv4ZRv6M/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Sheet1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1f_fPqRa2ex4NzTk2GupCFXNjwvyvlqbKdFzRv4ZRv6M/edit#gid=0"
+        },
+        "event": "rowAdded",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheetsTrigger",
+      "typeVersion": 1,
+      "position": [
+        0,
+        240
+      ],
+      "id": "6f952da9-beba-4cbc-8057-4e0a80f5e906",
+      "name": "Google Sheets Trigger",
+      "credentials": {
+        "googleSheetsTriggerOAuth2Api": {
+          "id": "B3TJIy3P1oLoSFVn",
+          "name": "Google Sheets Trigger account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "url": "=https://www.googleapis.com/drive/v3/files/{{$json[\"documentId\"]}}/export?mimeType=application/pdf\n",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "googleDriveOAuth2Api",
+        "options": {
+          "response": {
+            "response": {
+              "responseFormat": "file",
+              "outputPropertyName": "Invoice "
+            }
+          }
+        }
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        672,
+        240
+      ],
+      "id": "f8630d45-9294-49b5-a6c7-3b57f832706c",
+      "name": "Convert Invoice to PDF",
+      "credentials": {
+        "googleDriveOAuth2Api": {
+          "id": "aLZwgXKOBVgKKgpQ",
+          "name": "Google drive"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "download",
+        "fileId": {
+          "__rl": true,
+          "value": "={{ $json.documentId }}",
+          "mode": "id"
+        },
+        "options": {
+          "binaryPropertyName": "data"
+        }
+      },
+      "type": "n8n-nodes-base.googleDrive",
+      "typeVersion": 3,
+      "position": [
+        448,
+        240
+      ],
+      "id": "26e62b4a-075b-42f5-88a9-69b3209be907",
+      "name": "Downloads The Invoice",
+      "credentials": {
+        "googleDriveOAuth2Api": {
+          "id": "aLZwgXKOBVgKKgpQ",
+          "name": "Google drive"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "documentURL": "1wEeLIpvh12-dpzdpQmyhonIA0cpwj9lyq-Q7mYfw8EY",
+        "actionsUi": {
+          "actionFields": [
+            {
+              "action": "replaceAll",
+              "text": "{Client Name}",
+              "replaceText": "={{ $json['Client Name'] }}"
+            },
+            {
+              "action": "replaceAll",
+              "text": "{Client Address}",
+              "replaceText": "={{ $json['Client Address'] }}"
+            },
+            {
+              "action": "replaceAll",
+              "text": "{Client Email}",
+              "replaceText": "={{ $json['Client Email'] }}"
+            },
+            {
+              "action": "replaceAll",
+              "text": "{Invoice Number}",
+              "replaceText": "={{ $json['Order ID'] }}"
+            },
+            {
+              "action": "replaceAll",
+              "text": "{Invoice Date}",
+              "replaceText": "={{ $json['Order Date'] }}"
+            },
+            {
+              "action": "replaceAll",
+              "text": "{Item Description}",
+              "replaceText": "={{ $json.Product }}"
+            },
+            {
+              "action": "replaceAll",
+              "text": "{Quantity}",
+              "replaceText": "={{ $json.Quantity.toString() }}"
+            },
+            {
+              "action": "replaceAll",
+              "text": "{Price}",
+              "replaceText": "=${{ $json.Price.toString() }}"
+            },
+            {
+              "action": "replaceAll",
+              "text": "{Line Total}",
+              "replaceText": "=${{ $json.Subtotal.toString() }}"
+            },
+            {
+              "action": "replaceAll",
+              "text": "{Subtotal}",
+              "replaceText": "=${{ $json.Subtotal.toString() }}"
+            },
+            {
+              "action": "replaceAll",
+              "text": "{Tax}",
+              "replaceText": "={{ $json['Tax '].toString() }}"
+            },
+            {
+              "action": "replaceAll",
+              "text": "{Tax Amount}",
+              "replaceText": "=${{ $json['Tax Amount'].toString()}}"
+            },
+            {
+              "action": "replaceAll",
+              "text": "{Grand Total}",
+              "replaceText": "=${{ $json['Total Amount'].toString() }}"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.googleDocs",
+      "typeVersion": 2,
+      "position": [
+        224,
+        240
+      ],
+      "id": "54ad290b-a6b9-41fd-8885-3d126a92058e",
+      "name": "Update The invoice",
+      "credentials": {
+        "googleDocsOAuth2Api": {
+          "id": "3CbAlsrsbDw4Kipn",
+          "name": "Google Docs account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "amount": 3,
+        "unit": "minutes"
+      },
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        1120,
+        240
+      ],
+      "id": "d207715b-5c6d-44e9-b502-f0a44a21936e",
+      "name": "Wait",
+      "webhookId": "f3e9bea1-04aa-4bef-9a58-f9e739c21ef2"
+    },
+    {
+      "parameters": {
+        "sendTo": "={{ $('Google Sheets Trigger').item.json['Client Email'] }}",
+        "subject": "=INVOICE FOR  {{ $('Google Sheets Trigger').item.json['Client Name'] }}",
+        "emailType": "text",
+        "message": "=Hello  {{ $('Google Sheets Trigger').item.json['Client Name'] }}, \n\nThank you for patronizing our brand. Kindly find below your invoice and payment method below\n\nWe look forward to hearing from you!\n\nBest regards, \nSonia Paste Development",
+        "options": {
+          "appendAttribution": false,
+          "attachmentsUi": {
+            "attachmentsBinary": [
+              {}
+            ]
+          }
+        }
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.1,
+      "position": [
+        896,
+        240
+      ],
+      "id": "c9b771ca-f241-46ca-9617-564676b7e581",
+      "name": "Sends invoice",
+      "webhookId": "a3b8fc16-5bce-43b5-ae08-e85d9eaa85be",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "PY9IAK3U9kZGEigh",
+          "name": "Gmail account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "sendTo": "={{ $('Google Sheets Trigger').item.json['Client Email'] }}",
+        "subject": "Invoice Reminder",
+        "emailType": "text",
+        "message": "=Hello,       \n\nReminder about your Invoice. \n\nKind regards\n\n\n",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.1,
+      "position": [
+        1344,
+        240
+      ],
+      "id": "ba93c0e1-8b11-42ef-b5d4-723bd68f91bf",
+      "name": "Send a Reminder",
+      "webhookId": "b5cc7180-31a2-47e5-b477-8b46b26e2614",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "PY9IAK3U9kZGEigh",
+          "name": "Gmail account"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Google Sheets Trigger": {
+      "main": [
+        [
+          {
+            "node": "Update The invoice",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Downloads The Invoice": {
+      "main": [
+        [
+          {
+            "node": "Convert Invoice to PDF",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Update The invoice": {
+      "main": [
+        [
+          {
+            "node": "Downloads The Invoice",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Convert Invoice to PDF": {
+      "main": [
+        [
+          {
+            "node": "Sends invoice",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Sends invoice": {
+      "main": [
+        [
+          {
+            "node": "Wait",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Wait": {
+      "main": [
+        [
+          {
+            "node": "Send a Reminder",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "b2f9ed15-51e4-4876-8543-d01cfca23a89",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "e03811a21ff239f6b504af65a5176252b22bffa0287e24bf5a3341cc0e2652f7"
+  },
+  "id": "XsxKYesZTHNQu5aw",
+  "tags": []
+}

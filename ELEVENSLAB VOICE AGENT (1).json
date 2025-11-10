@@ -1,0 +1,244 @@
+{
+  "name": "ELEVENSLAB VOICE AGENT",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "Customer_order_Details",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        0,
+        0
+      ],
+      "id": "e758d0ab-d4ee-4e14-8589-89dcf69f4813",
+      "name": "Webhook",
+      "webhookId": "7f56eefc-738f-4b0e-8c72-5c46590afec9"
+    },
+    {
+      "parameters": {
+        "respondWith": "text",
+        "responseBody": "Order has been confirmed",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.4,
+      "position": [
+        576,
+        0
+      ],
+      "id": "a135b196-2a6d-44ec-a6ce-3f961c551d53",
+      "name": "Respond to Webhook"
+    },
+    {
+      "parameters": {
+        "options": {
+          "systemMessage": "You are the voice assistant for [Business Name]. \nThe user speaks to you through voice, and their words are transcribed into text. \nYour job is to do two things:\n\n1. If the user asks a general question (e.g., about the business, products, services, opening hours, pricing, etc.), \n   answer clearly and politely in plain text.\n\n2. If the user wants to place an order, respond ONLY in JSON format with these exact fields:\n{\n  \"intent\": \"order\",\n  \"customer_name\": \"<customer's name if provided, else ask>\",\n  \"order_item\": \"<the product or service they want>\",\n  \"quantity\": \"<number if given, else 'unspecified'>\",\n  \"notes\": \"<any extra details>\"\n}\n\nDo not include any other text outside of the JSON when intent = \"order\".\nAlways follow this rule strictly.\n\nExample:\nUser: \"I want 2 chocolate cupcakes\"\nAssistant: \n{\n  \"intent\": \"order\",\n  \"customer_name\": \"\",\n  \"order_item\": \"chocolate cupcakes\",\n  \"quantity\": \"2\",\n  \"notes\": \"\"\n}"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 2.2,
+      "position": [
+        224,
+        0
+      ],
+      "id": "257c790b-fb67-404c-8b37-6e4e90c3f8c9",
+      "name": "AI Agent"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1,
+      "position": [
+        0,
+        208
+      ],
+      "id": "62c2c4e6-0229-48e0-9d58-94e5f3932bef",
+      "name": "Google Gemini Chat Model",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "aWpfhqyie6KWfeJN",
+          "name": "Google Gemini(PaLM) Api account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "sessionIdType": "customKey"
+      },
+      "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
+      "typeVersion": 1.3,
+      "position": [
+        176,
+        288
+      ],
+      "id": "1786a54e-3303-4c5b-98c6-cf63bf0da88c",
+      "name": "Simple Memory"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "n8n-nodes-base.gmailTool",
+      "typeVersion": 2.1,
+      "position": [
+        528,
+        160
+      ],
+      "id": "b2771a4d-c678-481d-9078-b80827ece6d1",
+      "name": "Send a message in Gmail",
+      "webhookId": "196147b2-c146-46b7-bd1c-f0a6b21000b2"
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "1L2bHIqfXgsMIRIpckFoswTOUD5OX9feivCkSVm21HZE",
+          "mode": "list",
+          "cachedResultName": "Cupcakes Order",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1L2bHIqfXgsMIRIpckFoswTOUD5OX9feivCkSVm21HZE/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Sheet1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1L2bHIqfXgsMIRIpckFoswTOUD5OX9feivCkSVm21HZE/edit#gid=0"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {},
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "Name",
+              "displayName": "Name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Phone_Number",
+              "displayName": "Phone_Number",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Delivery_options",
+              "displayName": "Delivery_options",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Preferred_Products",
+              "displayName": "Preferred_Products",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheetsTool",
+      "typeVersion": 4.7,
+      "position": [
+        400,
+        224
+      ],
+      "id": "329cb536-1d26-426a-ad94-1c005a92b671",
+      "name": "Append row in sheet in Google Sheets",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "dVDZV7tZPxhA0gfg",
+          "name": "Google Sheets account"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent": {
+      "main": [
+        [
+          {
+            "node": "Respond to Webhook",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Gemini Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Simple Memory": {
+      "ai_memory": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send a message in Gmail": {
+      "ai_tool": [
+        []
+      ]
+    },
+    "Append row in sheet in Google Sheets": {
+      "ai_tool": [
+        []
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "803689de-73dc-42db-837d-5775390c0bfb",
+  "meta": {
+    "instanceId": "2d986a0c12a7dcf12d514f27fced82fe146e92a9c803738adaa301475fe422e5"
+  },
+  "id": "EG3Lovu3ifYFERcb",
+  "tags": []
+}
