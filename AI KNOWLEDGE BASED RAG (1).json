@@ -1,0 +1,412 @@
+{
+  "name": "AI KNOWLEDGE BASED RAG",
+  "nodes": [
+    {
+      "parameters": {
+        "options": {
+          "responseMode": "lastNode"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.chatTrigger",
+      "typeVersion": 1.3,
+      "position": [
+        240,
+        -32
+      ],
+      "id": "80940d24-7a47-4487-b6ab-c1a159d54d89",
+      "name": "On chat Query",
+      "webhookId": "36866489-e9ea-4945-a655-5b89e8551a0f"
+    },
+    {
+      "parameters": {
+        "hasOutputParser": true,
+        "options": {
+          "systemMessage": "You are a multilingual dental health assistant. \nAlways respond in the same language as the user query. \nYou can handle English, French, and Spanish.\nProvide clear and friendly responses.\n\n\n\nYou are an AI customer support assistant for a dental health clinic.\n\nYour main goals:\n\nProvide clear, accurate, and friendly answers to customer questions about our dental clinic, services, treatments, and general oral health.\n\nInternally, estimate your confidence level on a scale of 0 to 1 (where 1 = very confident, 0 = unsure) base on the answer you provided to a user query.\n\nAfter giving your response, politely ask for feedback with:\n“Was that helpful? Please reply with 👍.”\n\nWhen the user gives feedback, analyze it internally and classify it as either Positive or Negative.\n\nIf the feedback is positive, thank them warmly with a short, kind message.\n\nIf the feedback is negative or your confidence score is below 0.6, politely apologize and say:\n“I'm sorry to hear that. Let me transfer you to one of our human agents who can help further.” Then use the email tool and send a mail.\nThen, internally trigger a support escalation signal and instruct the system to send an email to the support team at egbuleomoze@gmail.com\n with the following details:\n\nSubject: Customer Escalation - Human Support Needed\n\nBody: A customer needs human assistance. Please review the conversation and respond manually.\n\nAlways keep your tone conversational, empathetic, and professional — like a caring dental receptionist.\n\nRules:\n\nYour customer-facing reply should only contain plain conversational text — never display JSON or structured data.\n\nAll internal data such as confidence score, feedback category, and escalation signals should be generated silently for the system to use.\n\n\nIf escalation is triggered, include an internal signal labeled TransferToHuman.\n\nWhen done save the structured data into the google sheet tool"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 2.2,
+      "position": [
+        832,
+        -32
+      ],
+      "id": "a71d6543-becc-4bd4-b1c3-ff303e9855ad",
+      "name": "AI Agent"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1,
+      "position": [
+        464,
+        192
+      ],
+      "id": "d5dc6c1f-ae5e-4cff-b40e-a4b1f571d64b",
+      "name": "Google Gemini Chat Model",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "Gxmc8u5Uz63nr6H9",
+          "name": "Google Gemini(PaLM) Api account"
+        }
+      }
+    },
+    {
+      "parameters": {},
+      "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
+      "typeVersion": 1.3,
+      "position": [
+        592,
+        192
+      ],
+      "id": "c76abe7b-f402-4933-90ba-5517887383b6",
+      "name": "Simple Memory"
+    },
+    {
+      "parameters": {
+        "description": "Dental Clinic Customer Support ",
+        "topK": 5
+      },
+      "type": "@n8n/n8n-nodes-langchain.toolVectorStore",
+      "typeVersion": 1.1,
+      "position": [
+        720,
+        192
+      ],
+      "id": "045d327e-9b8d-4a52-82d2-eb2932973e70",
+      "name": "Answer questions with a vector store"
+    },
+    {
+      "parameters": {
+        "pineconeIndex": {
+          "__rl": true,
+          "value": "rag-dental",
+          "mode": "list",
+          "cachedResultName": "rag-dental"
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.vectorStorePinecone",
+      "typeVersion": 1.3,
+      "position": [
+        624,
+        400
+      ],
+      "id": "619ea432-cec8-4824-a2e4-ae53ae6ceb96",
+      "name": "Pinecone Vector Store",
+      "credentials": {
+        "pineconeApi": {
+          "id": "DssoxWAQea2KXin1",
+          "name": "PineconeApi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1,
+      "position": [
+        912,
+        400
+      ],
+      "id": "1cec8be5-ae4c-46a5-af91-2036a3446bcc",
+      "name": "Google Gemini Chat Model1",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "Gxmc8u5Uz63nr6H9",
+          "name": "Google Gemini(PaLM) Api account"
+        }
+      }
+    },
+    {
+      "parameters": {},
+      "type": "@n8n/n8n-nodes-langchain.embeddingsGoogleGemini",
+      "typeVersion": 1,
+      "position": [
+        704,
+        608
+      ],
+      "id": "c8d5257a-f97b-4ee6-ba26-edbbf6aba701",
+      "name": "Embeddings Google Gemini",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "Gxmc8u5Uz63nr6H9",
+          "name": "Google Gemini(PaLM) Api account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "sendTo": "egbuleomoze@gmail.com",
+        "subject": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Subject', ``, 'string') }}",
+        "message": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Message', ``, 'string') }}",
+        "options": {
+          "appendAttribution": false
+        }
+      },
+      "type": "n8n-nodes-base.gmailTool",
+      "typeVersion": 2.1,
+      "position": [
+        1008,
+        192
+      ],
+      "id": "ae05b639-c197-4556-900c-2e85e2aedec2",
+      "name": "Send a message in Gmail",
+      "webhookId": "d09c99ee-5f72-4bae-a08a-7eceffa5435b",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "vP2VGKwkVd8q7jDn",
+          "name": "Gmail account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsonSchemaExample": "{\n  \"answer\": \"string\",\n  \"confidence\": \"number (0 to 1)\",\n  \"feedbackCategory\": \"Positive | Negative | None\",\n  \"escalate\": \"boolean\",\n  \"transferSignal\": \"string (TransferToHuman or None)\"\n}\n"
+      },
+      "type": "@n8n/n8n-nodes-langchain.outputParserStructured",
+      "typeVersion": 1.3,
+      "position": [
+        1264,
+        192
+      ],
+      "id": "84b12780-1b0f-4ae0-9e2b-c1732956c670",
+      "name": "Structured Output Parser"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Make sure there is output\nif (!$input.first() || !$input.first().json || !$input.first().json.output) {\n  return [];\n}\n\n// Grab the AI output object\nconst aiOutput = $input.first().json.output;\n\n// Extract user-facing response text\nconst responseText = aiOutput.responseText || aiOutput.answer || '';\n\n// Extract internal fields\nconst confidence = aiOutput._confidence || aiOutput.confidence || 0;\nconst feedbackCategory = aiOutput._feedbackCategory || aiOutput.feedbackCategory || 'None';\nconst transferToHuman = (confidence < 0.6 || feedbackCategory === 'Negative');\n\n// Store internal fields for workflow logic\nitems[0].json._confidence = confidence;\nitems[0].json._feedbackCategory = feedbackCategory;\nitems[0].json._TransferToHuman = transferToHuman;\n\n// Only send plain text to the user\nitems[0].json = { text: responseText };\n\nreturn items;\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1472,
+        -32
+      ],
+      "id": "b1f5dce7-da6b-455e-a1ba-d51bc430817b",
+      "name": "Code in JavaScript1"
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "1m0uu6OHytb0GhcdEYDUDJ9y7AtWAPPI86Zru5b5-Rgo",
+          "mode": "list",
+          "cachedResultName": "RAQ RESPONSES",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1m0uu6OHytb0GhcdEYDUDJ9y7AtWAPPI86Zru5b5-Rgo/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Sheet1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1m0uu6OHytb0GhcdEYDUDJ9y7AtWAPPI86Zru5b5-Rgo/edit#gid=0"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "HUMAN ENQUIRY": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('HUMAN_ENQUIRY', ``, 'string') }}",
+            "AI RESPONSE": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('AI_RESPONSE', ``, 'string') }}",
+            "CONFIDENCE SCORE": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('CONFIDENCE_SCORE', ``, 'string') }}",
+            "FEEDBACK CATEGORY": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('FEEDBACK_CATEGORY', ``, 'string') }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "HUMAN ENQUIRY",
+              "displayName": "HUMAN ENQUIRY",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "AI RESPONSE",
+              "displayName": "AI RESPONSE",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "CONFIDENCE SCORE",
+              "displayName": "CONFIDENCE SCORE",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "FEEDBACK CATEGORY",
+              "displayName": "FEEDBACK CATEGORY",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheetsTool",
+      "typeVersion": 4.7,
+      "position": [
+        1136,
+        192
+      ],
+      "id": "43bbdb55-8a59-4279-9e06-67e89a685b1e",
+      "name": "Append row in sheet in Google Sheets",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "CGStvicStrSp3695",
+          "name": "Google Sheets account"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "On chat Query": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Gemini Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Simple Memory": {
+      "ai_memory": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Answer questions with a vector store": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Pinecone Vector Store": {
+      "ai_vectorStore": [
+        [
+          {
+            "node": "Answer questions with a vector store",
+            "type": "ai_vectorStore",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Gemini Chat Model1": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Answer questions with a vector store",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Embeddings Google Gemini": {
+      "ai_embedding": [
+        [
+          {
+            "node": "Pinecone Vector Store",
+            "type": "ai_embedding",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send a message in Gmail": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Structured Output Parser": {
+      "ai_outputParser": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_outputParser",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Append row in sheet in Google Sheets": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "1ae4b779-6a01-4761-a6f8-7fcae4efa90a",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "1c818f7a4cb68b89517fe5d239eec0d61d8a8745b42226b59e67d62e32762ef8"
+  },
+  "id": "utoFpKXhthmkeR6s",
+  "tags": []
+}

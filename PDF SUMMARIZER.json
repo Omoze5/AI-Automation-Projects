@@ -1,0 +1,897 @@
+{
+  "name": "PDF SUMMARIZER",
+  "nodes": [
+    {
+      "parameters": {
+        "formTitle": "Research Paper Upload",
+        "formDescription": "Upload your research paper (PDF) and optionally ask a question about it",
+        "formFields": {
+          "values": [
+            {
+              "fieldLabel": "Research Paper (PDF)",
+              "fieldType": "file",
+              "multipleFiles": false,
+              "acceptFileTypes": ".pdf",
+              "requiredField": true
+            },
+            {
+              "fieldLabel": "Paper Title",
+              "requiredField": true
+            },
+            {
+              "fieldLabel": "Author(s)"
+            },
+            {
+              "fieldLabel": "Citation Format",
+              "fieldType": "dropdown",
+              "fieldOptions": {
+                "values": [
+                  {
+                    "option": "APA"
+                  },
+                  {
+                    "option": "MLA"
+                  },
+                  {
+                    "option": "IEEE"
+                  }
+                ]
+              }
+            },
+            {
+              "fieldLabel": "Question (Optional)",
+              "fieldType": "textarea",
+              "placeholder": "Ask a question about the paper..."
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "e78f0c67-cd10-49ed-928c-424157b1b21f",
+      "name": "Paper Upload Form",
+      "type": "n8n-nodes-base.formTrigger",
+      "typeVersion": 2.3,
+      "position": [
+        -976,
+        1072
+      ],
+      "webhookId": "2b1d7fff-2ae6-4eab-b48b-6be095c620bc"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "id-1",
+              "name": "chunkSize",
+              "value": 500,
+              "type": "number"
+            },
+            {
+              "id": "id-2",
+              "name": "chunkOverlap",
+              "value": 50,
+              "type": "number"
+            },
+            {
+              "id": "id-3",
+              "name": "topKResults",
+              "value": 3,
+              "type": "number"
+            },
+            {
+              "id": "id-4",
+              "name": "pineconeIndex",
+              "value": "pdf-summarizer",
+              "type": "string"
+            }
+          ]
+        },
+        "includeOtherFields": true,
+        "options": {}
+      },
+      "id": "f114d5ea-456a-4a5e-a096-8a96407f6e24",
+      "name": "Workflow Configuration",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -752,
+        1072
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "pdf",
+        "binaryPropertyName": "Research_Paper__PDF_",
+        "options": {}
+      },
+      "id": "94bb6b71-956f-49e0-a7e0-367f5854e18b",
+      "name": "Extract PDF Text",
+      "type": "n8n-nodes-base.extractFromFile",
+      "typeVersion": 1,
+      "position": [
+        -400,
+        720
+      ]
+    },
+    {
+      "parameters": {
+        "mode": "insert",
+        "pineconeIndex": {
+          "__rl": true,
+          "mode": "id",
+          "value": "={{ $('Workflow Configuration').first().json.pineconeIndex }}"
+        },
+        "options": {}
+      },
+      "id": "071f84c5-1ffe-4f00-858a-32cd7a09e5e1",
+      "name": "Store in Pinecone",
+      "type": "@n8n/n8n-nodes-langchain.vectorStorePinecone",
+      "typeVersion": 1.3,
+      "position": [
+        0,
+        0
+      ],
+      "credentials": {
+        "pineconeApi": {
+          "id": "DssoxWAQea2KXin1",
+          "name": "PineconeApi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "id": "dbbaed2d-10bd-4e50-906f-6b94b08f3849",
+      "name": "OpenAI Embeddings",
+      "type": "@n8n/n8n-nodes-langchain.embeddingsOpenAi",
+      "typeVersion": 1.2,
+      "position": [
+        -32,
+        224
+      ],
+      "credentials": {
+        "openAiApi": {
+          "id": "EUILYgRsZ3SD7Xzd",
+          "name": "n8n free OpenAI API credits"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "dataType": "binary",
+        "textSplittingMode": "custom",
+        "options": {}
+      },
+      "id": "ef26170f-68e0-482d-8276-b0778e2bc556",
+      "name": "Document Loader",
+      "type": "@n8n/n8n-nodes-langchain.documentDefaultDataLoader",
+      "typeVersion": 1.1,
+      "position": [
+        96,
+        224
+      ]
+    },
+    {
+      "parameters": {
+        "chunkSize": "={{ $('Workflow Configuration').first().json.chunkSize }}",
+        "chunkOverlap": "={{ $('Workflow Configuration').first().json.chunkOverlap }}",
+        "options": {}
+      },
+      "id": "34d78d9b-7c6d-4af3-9bd4-f193e6a4ef6b",
+      "name": "Text Splitter",
+      "type": "@n8n/n8n-nodes-langchain.textSplitterRecursiveCharacterTextSplitter",
+      "typeVersion": 1,
+      "position": [
+        176,
+        432
+      ]
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $json.text }}",
+        "hasOutputParser": true,
+        "options": {
+          "systemMessage": "You are an expert research paper summarizer. Your task is to analyze the provided research paper text and generate a structured summary.\n\nYour summary must include:\n1. Abstract Summary: A concise 2-3 sentence overview of the paper\n2. Key Findings: The main results and discoveries (3-5 bullet points)\n3. Conclusion Snapshot: A brief summary of the conclusions and implications\n\nBe accurate, concise, and focus on the most important information."
+        }
+      },
+      "id": "fb6e84b2-103c-4172-a52e-3a83e276e121",
+      "name": "Summarization Agent",
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3,
+      "position": [
+        48,
+        608
+      ]
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "mode": "list",
+          "value": "gpt-4.1-mini"
+        },
+        "options": {}
+      },
+      "id": "f71742c4-9319-4f62-9382-b393f259dda7",
+      "name": "OpenAI Chat Model - Summarization",
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.2,
+      "position": [
+        48,
+        832
+      ],
+      "credentials": {
+        "openAiApi": {
+          "id": "EUILYgRsZ3SD7Xzd",
+          "name": "n8n free OpenAI API credits"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "schemaType": "manual",
+        "inputSchema": "{\n\t\"type\": \"object\",\n\t\"properties\": {\n\t\t\"abstractSummary\": {\n\t\t\t\"type\": \"string\",\n\t\t\t\"description\": \"A concise 2-3 sentence overview of the paper\"\n\t\t},\n\t\t\"keyFindings\": {\n\t\t\t\"type\": \"string\",\n\t\t\t\"description\": \"The main results and discoveries as bullet points\"\n\t\t},\n\t\t\"conclusionSnapshot\": {\n\t\t\t\"type\": \"string\",\n\t\t\t\"description\": \"A brief summary of conclusions and implications\"\n\t\t}\n\t}\n}"
+      },
+      "id": "dbcafebe-83ba-46bb-9ee8-ec98090f23c5",
+      "name": "Structured Summary Parser",
+      "type": "@n8n/n8n-nodes-langchain.outputParserStructured",
+      "typeVersion": 1.3,
+      "position": [
+        176,
+        832
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "1cR6ctKl04jtC0-34FGcrOUPBLtqPOVMWSeerOSI7oGU",
+          "mode": "list",
+          "cachedResultName": "PDF SUMMARIZER",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1cR6ctKl04jtC0-34FGcrOUPBLtqPOVMWSeerOSI7oGU/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 1926815614,
+          "mode": "list",
+          "cachedResultName": "SAVE SUMMARY",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1cR6ctKl04jtC0-34FGcrOUPBLtqPOVMWSeerOSI7oGU/edit#gid=1926815614"
+        },
+        "columns": {
+          "mappingMode": "autoMapInputData",
+          "value": {},
+          "matchingColumns": [
+            "Paper Title"
+          ],
+          "schema": [
+            {
+              "id": "paper_id ",
+              "displayName": "paper_id ",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "title ",
+              "displayName": "title ",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "authors ",
+              "displayName": "authors ",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "upload_date ",
+              "displayName": "upload_date ",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "abstractSummary ",
+              "displayName": "abstractSummary ",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "keyFindings ",
+              "displayName": "keyFindings ",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "conclusionSnapshot ",
+              "displayName": "conclusionSnapshot ",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "citations ",
+              "displayName": "citations ",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "summary_date",
+              "displayName": "summary_date",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "id": "0b2c6692-6672-464e-8384-ada4845a97ee",
+      "name": "Save Summary to Google Sheets",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        464,
+        720
+      ],
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "CGStvicStrSp3695",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $json.text }}",
+        "hasOutputParser": true,
+        "options": {
+          "systemMessage": "=You are an expert citation formatter. Your task is to extract references from the provided research paper text and format them according to the requested citation style.\n\nThe user has requested citations in {{ $('Paper Upload Form').first().json.citationFormat }} format.\n\nYour task:\n1. Identify all references in the paper\n2. Extract key information (authors, title, year, journal/conference, DOI if available)\n3. Format each citation according to the requested style (APA, MLA, or IEEE)\n4. Return a structured list of formatted citations\n\nBe precise and follow the citation format guidelines exactly."
+        }
+      },
+      "id": "58029bb8-5ec7-41a1-8ff2-20ab6de77a32",
+      "name": "Citation Generator Agent",
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3,
+      "position": [
+        48,
+        1008
+      ]
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "mode": "list",
+          "value": "gpt-4.1-mini"
+        },
+        "options": {}
+      },
+      "id": "a248e8cd-1050-4f0d-b573-8b7d9ab93fbc",
+      "name": "OpenAI Chat Model - Citation",
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.2,
+      "position": [
+        48,
+        1232
+      ],
+      "credentials": {
+        "openAiApi": {
+          "id": "EUILYgRsZ3SD7Xzd",
+          "name": "n8n free OpenAI API credits"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsonSchemaExample": "{\n\t\"citationFormat\": \"APA\",\n\t\"citations\": \"Author, A. (2023). Title of work. Publisher.\\nAuthor, B. (2022). Another title. Journal Name.\",\n\t\"totalReferences\": 2\n}"
+      },
+      "id": "e9214049-bae0-4652-8582-e1ec67aa232e",
+      "name": "Structured Citation Parser",
+      "type": "@n8n/n8n-nodes-langchain.outputParserStructured",
+      "typeVersion": 1.3,
+      "position": [
+        176,
+        1232
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "1cR6ctKl04jtC0-34FGcrOUPBLtqPOVMWSeerOSI7oGU",
+          "mode": "list",
+          "cachedResultName": "PDF SUMMARIZER",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1cR6ctKl04jtC0-34FGcrOUPBLtqPOVMWSeerOSI7oGU/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 1542593286,
+          "mode": "list",
+          "cachedResultName": "SAVE CITATION ",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1cR6ctKl04jtC0-34FGcrOUPBLtqPOVMWSeerOSI7oGU/edit#gid=1542593286"
+        },
+        "columns": {
+          "mappingMode": "autoMapInputData",
+          "value": {
+            "citationFormat ": "="
+          },
+          "matchingColumns": [
+            "Paper Title"
+          ],
+          "schema": [
+            {
+              "id": "citationFormat ",
+              "displayName": "citationFormat ",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "citations ",
+              "displayName": "citations ",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "totalReferences ",
+              "displayName": "totalReferences ",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "id": "a0b153c7-6292-455a-8a28-eb0c54886509",
+      "name": "Save Citations to Google Sheets",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        464,
+        1120
+      ],
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "sjstDasZ8E5hjp8j",
+          "name": "Google Sheets account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=You are assisting with academic research questions.\n\nHere’s the relevant context extracted from the uploaded paper:\n{{ $json['Research Paper (PDF)'] }}\n\nUser Question:\n{{ $json['Question (Optional)'] }} \n\nInstructions:\n- Use only the information from the provided context to answer the question.\n- Cite the exact section or paragraph number if possible (based on the retrieved context).\n- If the answer cannot be found in the context, respond with: \"The information is not available in the provided paper.\"\n- Give a concise, factual answer (2–5 sentences maximum).\n\nReturn your final response in this JSON format:\n{\n  \"question\": \" {{ $json['Question (Optional)'] }}          \",\n  \"answer\": \"Your generated answer here\",\n  \"citations\": [\"short reference or chunk number if available\"]\n}\n",
+        "options": {
+          "systemMessage": "You are a research assistant helping users understand academic papers. You have access to a vector database containing the uploaded research paper.\n\nYour task:\n1. Use the vector store tool to retrieve relevant sections from the paper\n2. Answer the user's question based on the retrieved context\n3. Provide accurate, well-cited responses\n4. If the information is not in the paper, clearly state that\n\nBe helpful, accurate, and cite specific sections when possible."
+        }
+      },
+      "id": "0d014de0-4865-42f3-8fcf-6f8be657023f",
+      "name": "Q&A Agent",
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3,
+      "position": [
+        -496,
+        1408
+      ]
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "mode": "list",
+          "value": "gpt-4.1-mini"
+        },
+        "options": {}
+      },
+      "id": "3df456a6-76bd-4469-8b4d-27764802003c",
+      "name": "OpenAI Chat Model - Q&A",
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.2,
+      "position": [
+        -592,
+        1632
+      ],
+      "credentials": {
+        "openAiApi": {
+          "id": "EUILYgRsZ3SD7Xzd",
+          "name": "n8n free OpenAI API credits"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "mode": "retrieve-as-tool",
+        "toolDescription": "Search the uploaded research paper for relevant information. Use this to find specific sections, facts, or context from the paper.",
+        "pineconeIndex": {
+          "__rl": true,
+          "mode": "id",
+          "value": "={{ $('Workflow Configuration').first().json.pineconeIndex }}"
+        },
+        "topK": "={{ $('Workflow Configuration').first().json.topKResults }}",
+        "options": {}
+      },
+      "id": "7a723766-fcab-4255-aee7-0087e9ee08a3",
+      "name": "Retrieve from Pinecone",
+      "type": "@n8n/n8n-nodes-langchain.vectorStorePinecone",
+      "typeVersion": 1.3,
+      "position": [
+        -400,
+        1632
+      ],
+      "credentials": {
+        "pineconeApi": {
+          "id": "pQzc90NPwyp1dy6G",
+          "name": "PineconeApi account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "id": "7675738d-ae22-443f-a57a-f4a9f66cfc3b",
+      "name": "OpenAI Embeddings - Retrieval",
+      "type": "@n8n/n8n-nodes-langchain.embeddingsOpenAi",
+      "typeVersion": 1.2,
+      "position": [
+        -320,
+        1840
+      ],
+      "credentials": {
+        "openAiApi": {
+          "id": "EUILYgRsZ3SD7Xzd",
+          "name": "n8n free OpenAI API credits"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "1cR6ctKl04jtC0-34FGcrOUPBLtqPOVMWSeerOSI7oGU",
+          "mode": "list",
+          "cachedResultName": "PDF SUMMARIZER",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1cR6ctKl04jtC0-34FGcrOUPBLtqPOVMWSeerOSI7oGU/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "LOG Q & A",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1cR6ctKl04jtC0-34FGcrOUPBLtqPOVMWSeerOSI7oGU/edit#gid=0"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {},
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "Questions ",
+              "displayName": "Questions ",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Answers",
+              "displayName": "Answers",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "id": "6fe38dfa-e42f-4184-ac44-fac9a1b4d822",
+      "name": "Log Q&A History",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        112,
+        1408
+      ],
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "sjstDasZ8E5hjp8j",
+          "name": "Google Sheets account 2"
+        }
+      }
+    }
+  ],
+  "pinData": {
+    "Paper Upload Form": [
+      {
+        "json": {
+          "Research Paper (PDF)": {
+            "filename": "AI RAQ.pdf",
+            "mimetype": "application/pdf",
+            "size": 5537741
+          },
+          "Paper Title": "AI RAQ",
+          "Author(s)": "Osaro",
+          "Citation Format": "APA",
+          "Question (Optional)": "Tell me more about rag",
+          "submittedAt": "2025-11-03T15:15:00.024+01:00",
+          "formMode": "test"
+        },
+        "binary": {
+          "Research_Paper__PDF_": {
+            "mimeType": "application/pdf",
+            "fileType": "pdf",
+            "fileExtension": "pdf",
+            "data": "filesystem-v2",
+            "fileName": "AI RAQ.pdf",
+            "id": "filesystem-v2:workflows/R6dx05nBsSVBg2MQ/executions/temp/binary_data/7613510c-99a3-486f-ba20-1f523b23f5bd",
+            "fileSize": "5.54 MB"
+          }
+        }
+      }
+    ]
+  },
+  "connections": {
+    "Paper Upload Form": {
+      "main": [
+        [
+          {
+            "node": "Workflow Configuration",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Workflow Configuration": {
+      "main": [
+        [
+          {
+            "node": "Extract PDF Text",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Q&A Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Extract PDF Text": {
+      "main": [
+        [
+          {
+            "node": "Store in Pinecone",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Summarization Agent",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Citation Generator Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Embeddings": {
+      "ai_embedding": [
+        [
+          {
+            "node": "Store in Pinecone",
+            "type": "ai_embedding",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Document Loader": {
+      "ai_document": [
+        [
+          {
+            "node": "Store in Pinecone",
+            "type": "ai_document",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Text Splitter": {
+      "ai_textSplitter": [
+        [
+          {
+            "node": "Document Loader",
+            "type": "ai_textSplitter",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Chat Model - Summarization": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Summarization Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Structured Summary Parser": {
+      "ai_outputParser": [
+        [
+          {
+            "node": "Summarization Agent",
+            "type": "ai_outputParser",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Summarization Agent": {
+      "main": [
+        [
+          {
+            "node": "Save Summary to Google Sheets",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Chat Model - Citation": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Citation Generator Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Structured Citation Parser": {
+      "ai_outputParser": [
+        [
+          {
+            "node": "Citation Generator Agent",
+            "type": "ai_outputParser",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Citation Generator Agent": {
+      "main": [
+        [
+          {
+            "node": "Save Citations to Google Sheets",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Chat Model - Q&A": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Q&A Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Retrieve from Pinecone": {
+      "ai_tool": [
+        [
+          {
+            "node": "Q&A Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Embeddings - Retrieval": {
+      "ai_embedding": [
+        [
+          {
+            "node": "Retrieve from Pinecone",
+            "type": "ai_embedding",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Q&A Agent": {
+      "main": [
+        [
+          {
+            "node": "Log Q&A History",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "249b8f1b-a7de-41ef-a43f-b0997b24a4c1",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "1c818f7a4cb68b89517fe5d239eec0d61d8a8745b42226b59e67d62e32762ef8"
+  },
+  "id": "R6dx05nBsSVBg2MQ",
+  "tags": []
+}

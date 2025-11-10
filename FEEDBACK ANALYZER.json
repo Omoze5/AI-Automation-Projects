@@ -1,0 +1,421 @@
+{
+  "name": "FEEDBACK ANALYZER",
+  "nodes": [
+    {
+      "parameters": {
+        "jsCode": "// Get the incoming form submission\nconst input = $json;\n\n// Capture fields from the form\nconst customer_name = input.name || input.customer_name || $input.first().json['What is your Name'];\n\nconst feedback = input.feedback || input.chatInput || $input.first().json.FeedBack;\n\nconst sessionId = input.sessionId || \"Unknown\";\n\n// Define positive and negative keywords\nconst positiveWords = [\n  \"good\", \"great\", \"excellent\", \"amazing\", \"love\",\n  \"affordable\", \"happy\", \"satisfied\", \"nice\", \"fantastic\"\n];\nconst negativeWords = [\n  \"bad\", \"poor\", \"expensive\", \"high\", \"low\", \"fake\",\n  \"terrible\", \"hate\", \"disappointed\", \"frustrated\"\n];\n\n// Convert feedback to lowercase for easier matching\nconst lowerText = feedback.toLowerCase();\n\n// Count matches\nlet posMatches = 0;\nlet negMatches = 0;\n\npositiveWords.forEach(word => {\n  if (lowerText.includes(word)) posMatches++;\n});\nnegativeWords.forEach(word => {\n  if (lowerText.includes(word)) negMatches++;\n});\n\n// Determine sentiment\nlet sentiment = \"Neutral\";\nif (posMatches > negMatches) sentiment = \"Positive\";\nif (negMatches > posMatches) sentiment = \"Negative\";\n\n// Return structured data\nreturn {\n  json: {\n    customer_name,\n    feedback,\n    sentiment,\n    posMatches,\n    negMatches,\n    detected_positive_keywords: positiveWords.filter(w => lowerText.includes(w)),\n    detected_negative_keywords: negativeWords.filter(w => lowerText.includes(w)),\n    analyzed_at: new Date().toISOString(),\n    sessionId\n  }\n};\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        112,
+        -96
+      ],
+      "id": "ee76709f-2529-455a-af95-23c73577adfd",
+      "name": "Code in JavaScript"
+    },
+    {
+      "parameters": {
+        "formTitle": "FEEDBACK SURVEY",
+        "formDescription": "Kindly drop a review for us to improve our service to you",
+        "formFields": {
+          "values": [
+            {
+              "fieldLabel": "What is your Name",
+              "placeholder": "Name",
+              "requiredField": true
+            },
+            {
+              "fieldLabel": "FeedBack",
+              "placeholder": "feedback",
+              "requiredField": true
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.formTrigger",
+      "typeVersion": 2.3,
+      "position": [
+        -112,
+        -96
+      ],
+      "id": "4532b78e-d65f-4736-8994-355e3481273e",
+      "name": "On form submission",
+      "webhookId": "0033c5e4-ca8b-4506-8893-8434136cd81d"
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.sentiment }}",
+                    "rightValue": "Positive",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    },
+                    "id": "66730696-af83-484e-be09-0e241f39de91"
+                  }
+                ],
+                "combinator": "and"
+              }
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "4c4c2d88-eccb-4b6d-a7ce-8803a627655d",
+                    "leftValue": "={{ $json.sentiment }}",
+                    "rightValue": "Negative",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals",
+                      "name": "filter.operator.equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              }
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "253761d9-2289-462d-abbb-97a4d1b41bcb",
+                    "leftValue": "={{ $json.sentiment }}",
+                    "rightValue": "Neutral",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals",
+                      "name": "filter.operator.equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              }
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.3,
+      "position": [
+        336,
+        -112
+      ],
+      "id": "712d82fc-e0a2-4493-8a1c-c2ad36ef0123",
+      "name": "Switch"
+    },
+    {
+      "parameters": {
+        "operation": "completion",
+        "completionTitle": "Thank you!",
+        "completionMessage": "We are really sorry about your experience. Please rest be assured that the issue will be resolved promptly. Thank you",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.form",
+      "typeVersion": 2.3,
+      "position": [
+        560,
+        -96
+      ],
+      "id": "ae914db4-4ea1-4be4-9826-827336910d88",
+      "name": "Negative",
+      "webhookId": "982e8af7-b3dc-4365-8b3d-c7e5a776cf72"
+    },
+    {
+      "parameters": {
+        "operation": "completion",
+        "completionTitle": "Thank You!",
+        "completionMessage": "Thank you for trusting our products. We look forward to serving you better",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.form",
+      "typeVersion": 2.3,
+      "position": [
+        560,
+        96
+      ],
+      "id": "34ac2ad4-c6b8-4e00-a9a6-a20987f832d9",
+      "name": "Neutral",
+      "webhookId": "e812b831-36dc-42e1-aab3-370a94483f16"
+    },
+    {
+      "parameters": {
+        "operation": "completion",
+        "completionTitle": "Thank You!",
+        "completionMessage": "Thank you for your honest feedback. We look forward to serving you better",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.form",
+      "typeVersion": 2.3,
+      "position": [
+        560,
+        -288
+      ],
+      "id": "24d7a7d9-cb04-45ae-847a-bfcc170e94b3",
+      "name": "Positive",
+      "webhookId": "ba0f0521-7b86-441a-aa1d-b2419ecbea30"
+    },
+    {
+      "parameters": {
+        "numberInputs": 3
+      },
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.2,
+      "position": [
+        784,
+        -112
+      ],
+      "id": "1d34de3c-f808-4a91-8624-6f502a7b6384",
+      "name": "Merge"
+    },
+    {
+      "parameters": {
+        "workflowId": {
+          "__rl": true,
+          "value": "ZvMPKeb41MC3XbKi",
+          "mode": "list",
+          "cachedResultUrl": "/workflow/ZvMPKeb41MC3XbKi",
+          "cachedResultName": "FEEDBACK LOGGER"
+        },
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "customer_name": "={{ $json.customer_name }}",
+            "feedback": "={{ $json.feedback }}",
+            "sentiment": "={{ $json.sentiment }}",
+            "posMatches": "={{ $json.posMatches }}",
+            "negMatches": "={{ $json.negMatches }}",
+            "detected_positive_keywords": "={{ $json.detected_positive_keywords }}",
+            "detected_negative_keywords": "={{ $json.detected_negative_keywords }}",
+            "analyzed_at": "={{ $json.analyzed_at }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "customer_name",
+              "displayName": "customer_name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string",
+              "removed": false
+            },
+            {
+              "id": "feedback",
+              "displayName": "feedback",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string",
+              "removed": false
+            },
+            {
+              "id": "sentiment",
+              "displayName": "sentiment",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string",
+              "removed": false
+            },
+            {
+              "id": "posMatches",
+              "displayName": "posMatches",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "number",
+              "removed": false
+            },
+            {
+              "id": "negMatches",
+              "displayName": "negMatches",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "number",
+              "removed": false
+            },
+            {
+              "id": "detected_positive_keywords",
+              "displayName": "detected_positive_keywords",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "array",
+              "removed": false
+            },
+            {
+              "id": "detected_negative_keywords",
+              "displayName": "detected_negative_keywords",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "array",
+              "removed": false
+            },
+            {
+              "id": "analyzed_at",
+              "displayName": "analyzed_at",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string",
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": true
+        },
+        "options": {
+          "waitForSubWorkflow": true
+        }
+      },
+      "type": "n8n-nodes-base.executeWorkflow",
+      "typeVersion": 1.3,
+      "position": [
+        1008,
+        -96
+      ],
+      "id": "f83436e4-6b5e-4d17-881b-7e4a2e8307ae",
+      "name": "Call 'FEEDBACK LOGGER'"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Code in JavaScript": {
+      "main": [
+        [
+          {
+            "node": "Switch",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "On form submission": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Switch": {
+      "main": [
+        [
+          {
+            "node": "Positive",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Negative",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Neutral",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Positive": {
+      "main": [
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Negative": {
+      "main": [
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "Neutral": {
+      "main": [
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 2
+          }
+        ]
+      ]
+    },
+    "Merge": {
+      "main": [
+        [
+          {
+            "node": "Call 'FEEDBACK LOGGER'",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "f60df8b6-427d-434f-b58e-c8fad68320d8",
+  "meta": {
+    "instanceId": "1c818f7a4cb68b89517fe5d239eec0d61d8a8745b42226b59e67d62e32762ef8"
+  },
+  "id": "SjFG9xLYAjfQP9Xu",
+  "tags": []
+}

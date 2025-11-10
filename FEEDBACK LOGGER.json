@@ -1,0 +1,128 @@
+{
+  "name": "FEEDBACK LOGGER",
+  "nodes": [
+    {
+      "parameters": {
+        "inputSource": "jsonExample",
+        "jsonExample": "{\n  \"customer_name\": \"Ngozi\",\n  \"feedback\": \"The product is bad\",\n  \"sentiment\": \"Negative\",\n  \"posMatches\": 0,\n  \"negMatches\": 1,\n  \"detected_positive_keywords\": [],\n  \"detected_negative_keywords\": [\"bad\"],\n  \"analyzed_at\": \"2025-10-20T14:44:07.517Z\"\n}\n"
+      },
+      "type": "n8n-nodes-base.executeWorkflowTrigger",
+      "typeVersion": 1.1,
+      "position": [
+        0,
+        0
+      ],
+      "id": "4646a2b4-01a5-470c-8cd4-da51ce68540a",
+      "name": "When Executed by Another Workflow"
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "1iEhVmJHH94cKQBaRRqhQC6cp5Q59egLL2rJfqh2aNZU",
+          "mode": "list",
+          "cachedResultName": "FEEDBACK ANALYZER RESPONSE",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1iEhVmJHH94cKQBaRRqhQC6cp5Q59egLL2rJfqh2aNZU/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Sheet1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1iEhVmJHH94cKQBaRRqhQC6cp5Q59egLL2rJfqh2aNZU/edit#gid=0"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Customer_Name": "={{ $json.customer_name }}",
+            "Feedback": "={{ $json.feedback }}",
+            "Sentiment": "={{ $json.sentiment }}",
+            "Analyzed_at": "={{ $json.analyzed_at }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "Customer_Name",
+              "displayName": "Customer_Name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Feedback",
+              "displayName": "Feedback",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Sentiment",
+              "displayName": "Sentiment",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Analyzed_at",
+              "displayName": "Analyzed_at",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        256,
+        0
+      ],
+      "id": "72589f0c-e65f-46a0-88b6-8616df9071c3",
+      "name": "Append row in sheet",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "CGStvicStrSp3695",
+          "name": "Google Sheets account"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "When Executed by Another Workflow": {
+      "main": [
+        [
+          {
+            "node": "Append row in sheet",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "e53209db-bda4-4080-a08c-460819f925dc",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "1c818f7a4cb68b89517fe5d239eec0d61d8a8745b42226b59e67d62e32762ef8"
+  },
+  "id": "ZvMPKeb41MC3XbKi",
+  "tags": []
+}
