@@ -1,0 +1,359 @@
+{
+  "name": "Customer_Support_Agent(n8n)",
+  "nodes": [
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $json.body }}",
+        "options": {
+          "systemMessage": "=You are processing customer conversations from a voice assistant. Your job is to identify when a complete order has been placed and extract the order information for processing.\nBusiness name: Flawless Cupcakes\nAddress: Ada George Road\nBusiness Contact Details: info@cupcakes.com\n\nCurrency: £\n\nIMPORTANT: The customer has already been speaking with the voice assistant, which handles all business questions and initial order taking. You only receive conversations where an order is being placed.\n\nEvery order takes at least 24hours to be processed, example if you ordered today before 12pm, your order will be ready tomorrow. if not its the day after tomorrow\n\nYOUR TASK:\nAnalyze the conversation and determine if a complete order has been placed. Look for:\n- Customer order details (items, quantities, options)  \n- Customer contact information (name, phone, email, address)\n- Order confirmation from the customer\n\nIF this is a COMPLETE ORDER with ALL required information, respond EXACTLY in this format:\n\nORDER_CONFIRMED\nCustomer Name: [Extract full name from conversation]\nPhone: [Extract phone number]\nEmail: [Extract email address]\nAddress: [Extract delivery/pickup address]\nOrder Details: [List all items with quantities and specifications]\nTotal Amount: [Extract total price if mentioned]\nSpecial Instructions: [Any special requests mentioned]\n\nsend an email confirmation and payment link to the customer's email, remember to tell them that payment validates order. Let them know they will notified when their order is ready for pickup or deleivery\nORDER_END\n\nIF this is NOT a complete order (missing customer info or order details), respond:\n\nINCOMPLETE_ORDER\nMissing: [List what information is still needed]\nCurrent Order: [Summarize what has been collected so far]\n\nIF this is just a business information request (not an order), respond:\n\nINFORMATION_REQUEST\nQuery: [Summarize what the customer asked about]\n\nEXTRACTION RULES:\n- Only process orders where customer has provided name, phone, email, and address\n- Extract exact items, quantities, and options mentioned\n- Include any special instructions or delivery preferences\n- If price/total is mentioned, include it\n- Be precise - don't guess or fill in missing information\n\nEXAMPLE CONVERSATIONS:\n\nConversation: \"Hi, I'd like to order 2 large pepperoni pizzas for delivery. My name is John Smith, phone is 555-123-4567, email john@email.com, and deliver to 123 Main St, Anytown.\"\n\nResponse:\nORDER_CONFIRMED\nCustomer Name: John Smith\nPhone: 555-123-4567\nEmail: john@email.com\nAddress: 123 Main St, Anytown\nOrder Details: 2 Large Pepperoni Pizzas\nTotal Amount: Not specified\nSpecial Instructions: Delivery\nORDER_END\n\nConversation: \"What are your hours today?\"\n\nResponse:\nINFORMATION_REQUEST\nQuery: Business hours inquiry\n\n\nAppend the order details into google sheet\nthe details are in the body of this:\nName: {{ $json.body.Name }}\nPhone Number: {{ $json.body.Phone_Number }}\nDelivery options: {{ $json.body.Delivery_options }}\n\nPreferred Products: {{ $json.body.Preferred_Products }}\n\nEmail: {{ $json.body.Email }}\n\nTotal Amount :{{ $json.body.Total_Amount }}\n\nDateTime of pickup/delivery: {{ $json.body.Date }}\n\ncurrent date & time: {{ $now }}\n\n\nRemember: You are ONLY extracting and formatting order information. The voice assistant handles all customer interaction."
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 2.2,
+      "position": [
+        48,
+        -16
+      ],
+      "id": "f1e26314-586e-4597-99aa-0eb0268766b9",
+      "name": "AI Agent"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1,
+      "position": [
+        -208,
+        224
+      ],
+      "id": "39dcecd9-39d5-49e1-936e-698277862dcc",
+      "name": "Google Gemini Chat Model",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "WEM5TZmeXHJkL88n",
+          "name": "Google Gemini(PaLM) Api account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "sessionIdType": "customKey",
+        "sessionKey": "={{ $json.headers['cf-ray'] }}"
+      },
+      "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
+      "typeVersion": 1.3,
+      "position": [
+        16,
+        256
+      ],
+      "id": "aa043e62-7994-43e1-a4fb-2a95ad7c7597",
+      "name": "Simple Memory"
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "1L2bHIqfXgsMIRIpckFoswTOUD5OX9feivCkSVm21HZE",
+          "mode": "list",
+          "cachedResultName": "Cupcakes Order",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1L2bHIqfXgsMIRIpckFoswTOUD5OX9feivCkSVm21HZE/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Sheet1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1L2bHIqfXgsMIRIpckFoswTOUD5OX9feivCkSVm21HZE/edit#gid=0"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Name": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Name', ``, 'string') }}",
+            "Phone_Number": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Phone_Number', ``, 'string') }}",
+            "Delivery_options": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Delivery_options', ``, 'string') }}",
+            "Preferred_Products": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Preferred_Products', ``, 'string') }}",
+            "Email": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Email', ``, 'string') }}",
+            "Total Amount ( £)": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Total_Amount_____', ``, 'string') }}",
+            "Datetime of Pickup/Delivery": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Datetime_of_Pickup_Delivery', ``, 'string') }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "Name",
+              "displayName": "Name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Phone_Number",
+              "displayName": "Phone_Number",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Delivery_options",
+              "displayName": "Delivery_options",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Preferred_Products",
+              "displayName": "Preferred_Products",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Email",
+              "displayName": "Email",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Total Amount ( £)",
+              "displayName": "Total Amount ( £)",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Datetime of Pickup/Delivery",
+              "displayName": "Datetime of Pickup/Delivery",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheetsTool",
+      "typeVersion": 4.7,
+      "position": [
+        240,
+        208
+      ],
+      "id": "d75fdef6-aee8-48aa-93a0-a7e2745ee1a9",
+      "name": "Append row in sheet in Google Sheets",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "rUjggs1C0fUlpZD3",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "sendTo": "={{ $json.body.Email }}",
+        "subject": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Subject', ``, 'string') }}",
+        "emailType": "text",
+        "message": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Message', ``, 'string') }}",
+        "options": {
+          "appendAttribution": false
+        }
+      },
+      "type": "n8n-nodes-base.gmailTool",
+      "typeVersion": 2.1,
+      "position": [
+        384,
+        192
+      ],
+      "id": "8b6880ac-0901-4a85-a156-bda6ffa1c6ac",
+      "name": "Send a message in Gmail",
+      "webhookId": "ad77aa7a-e0ba-4d2d-b118-9d43f2a287aa",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "b9Kiczj7XNnIeIBa",
+          "name": "Gmail account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "{\"status\": \"received\", \"message\": \"Processing your order\"}\n",
+        "options": {
+          "responseCode": 200
+        }
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.4,
+      "position": [
+        512,
+        -16
+      ],
+      "id": "841697c0-ed72-45de-a99a-37157346072c",
+      "name": "Respond to Webhook"
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "e93590c2-2f76-4005-8266-cd301b17f54d",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        -304,
+        -16
+      ],
+      "id": "02c8b6b2-213e-495e-85cf-fac861651368",
+      "name": "Webhook1",
+      "webhookId": "e93590c2-2f76-4005-8266-cd301b17f54d"
+    }
+  ],
+  "pinData": {
+    "Webhook1": [
+      {
+        "json": {
+          "headers": {
+            "host": "flawlessfavour.app.n8n.cloud",
+            "user-agent": "ElevenLabs/1.0",
+            "content-length": "227",
+            "accept": "*/*",
+            "accept-encoding": "gzip, br",
+            "cdn-loop": "cloudflare; loops=1; subreqs=1",
+            "cf-connecting-ip": "34.59.11.47",
+            "cf-ew-via": "15",
+            "cf-ipcountry": "US",
+            "cf-ray": "987ae9e8448a141c-ORD",
+            "cf-visitor": "{\"scheme\":\"https\"}",
+            "cf-worker": "n8n.cloud",
+            "content-type": "application/json",
+            "x-forwarded-for": "34.59.11.47, 172.70.126.98",
+            "x-forwarded-host": "flawlessfavour.app.n8n.cloud",
+            "x-forwarded-port": "443",
+            "x-forwarded-proto": "https",
+            "x-forwarded-server": "traefik-prod-users-gwc-15-6cb64f5ddc-g6lcc",
+            "x-is-trusted": "yes",
+            "x-real-ip": "34.59.11.47"
+          },
+          "params": {},
+          "query": {},
+          "body": {
+            "Phone_Number": "090-3748-5295",
+            "Delivery_Options": "Pickup",
+            "Email": "omozeegbule@gmail.com",
+            "Total_Amount": "37.50",
+            "Name": "Mercy Joy",
+            "Product_Preferred": "Classic Swirls - Box of 12",
+            "DateTime": "Saturday 10:00 AM",
+            "additional_kwargs": {},
+            "response_metadata": {}
+          },
+          "webhookUrl": "https://flawlessfavour.app.n8n.cloud/webhook-test/e93590c2-2f76-4005-8266-cd301b17f54d",
+          "executionMode": "test"
+        }
+      }
+    ]
+  },
+  "connections": {
+    "AI Agent": {
+      "main": [
+        [
+          {
+            "node": "Respond to Webhook",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Gemini Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Simple Memory": {
+      "ai_memory": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Append row in sheet in Google Sheets": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send a message in Gmail": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Webhook1": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "saveExecutionProgress": true,
+    "callerPolicy": "workflowsFromSameOwner",
+    "errorWorkflow": "d3dqQQFfFnrLj2I4",
+    "timezone": "Africa/Lagos"
+  },
+  "versionId": "08fd0acc-2246-47c7-89a2-e05215254e73",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "3142643e6548b73ffaf2cf86bd8c364310ee7e759837de1476a24ac876bdb955"
+  },
+  "id": "d3dqQQFfFnrLj2I4",
+  "tags": []
+}
